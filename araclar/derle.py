@@ -1,6 +1,6 @@
 """KMS_Sozlesme.exe'yi derler. Hem yerelde hem GitHub Actions'ta aynı şekilde çalışır.
 
-Kullanım:  python araclar/derle.py [--etiket v1.2.0]
+Kullanım:  python araclar/derle.py [--etiket v1.2.0] [--cikti KLASOR]
 --etiket verilirse etiketin surum.py ile aynı olduğu doğrulanır ve sürüm notları
 build/notlar.md dosyasına yazılır (GitHub Release açıklaması için).
 """
@@ -16,6 +16,7 @@ sys.path.insert(0, str(ARACLAR))
 from surum import EXE_ADI, SURUM  # noqa: E402
 
 BUILD = KOK / "build"
+CIKTI = KOK / "DAGITIM"
 SURUM_DOSYASI = """VSVersionInfo(
   ffi=FixedFileInfo(filevers=({v}, 0), prodvers=({v}, 0), mask=0x3f, flags=0x0, OS=0x40004, fileType=0x1, subtype=0x0, date=(0, 0)),
   kids=[
@@ -41,6 +42,9 @@ def main():
         sys.exit(f"HATA: yenilikler.json içinde {SURUM} için not yok. Önce yenilikleri yazın.")
 
     BUILD.mkdir(exist_ok=True)
+    global CIKTI
+    if "--cikti" in sys.argv:  # ör. test derlemeleri, çalışan exe'nin üzerine yazmamak için
+        CIKTI = Path(sys.argv[sys.argv.index("--cikti") + 1]).resolve()
     if "--etiket" in sys.argv:
         etiket = sys.argv[sys.argv.index("--etiket") + 1]
         if etiket.lstrip("vV") != SURUM:
@@ -65,10 +69,10 @@ def main():
         *[a for m in ("numpy", "pandas", "matplotlib", "PIL", "IPython") for a in ("--exclude-module", m)],
         "--paths", str(ARACLAR),
         "--workpath", str(BUILD / "pyinstaller"), "--specpath", str(BUILD),
-        "--distpath", str(KOK / "DAGITIM"),
+        "--distpath", str(CIKTI),
         str(ARACLAR / "kms.py"),
     ])
-    print(f"Hazır: DAGITIM/{EXE_ADI} (v{SURUM})")
+    print(f"Hazır: {CIKTI / EXE_ADI} (v{SURUM})")
 
 
 if __name__ == "__main__":

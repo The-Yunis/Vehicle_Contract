@@ -232,9 +232,13 @@ def guncelle_ve_yeniden_baslat():
     port = SUNUCU[0].server_address[1]
     SUNUCU[0].shutdown()
     SUNUCU[0].server_close()
-    # Yeni sürüm aynı portta açılır; mevcut pencere onu bulup kendini yeniler
-    subprocess.Popen([str(exe), "--devam", "--port", str(port)],
-                     creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, close_fds=True)
+    # Yeni sürüm aynı portta açılır; mevcut pencere onu bulup kendini yeniler.
+    # PyInstaller'ın ortam değişkenleri yeni sürece geçerse yeni exe kendini bizim alt sürecimiz
+    # sanıp bizim (birazdan silinecek) geçici klasörümüzü kullanır ve çöker; temiz başlatıyoruz.
+    ortam = {k: v for k, v in os.environ.items() if not k.upper().startswith(("_PYI", "_MEI"))}
+    ortam["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+    subprocess.Popen([str(exe), "--devam", "--port", str(port)], env=ortam, close_fds=True,
+                     creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
     os._exit(0)
 
 
