@@ -205,7 +205,7 @@ td small { color: var(--soluk); display: block; font-size: 12px; }
 .dosya-satir { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--cizgi); border-radius: 10px; margin-bottom: 8px; }
 .dosya-satir .tur { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; color: #fff; font-size: 10.5px; font-weight: 800; flex: none; }
 .dosya-satir span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
-.tur-docx { background: #2b5797; } .tur-pdf { background: #c4321c; } .tur-xlsx { background: #1f7a3f; }
+.tur-docx { background: #2b5797; } .tur-pdf { background: #c4321c; }
 
 .anahtar { display: flex; align-items: center; gap: 12px; cursor: pointer; }
 .anahtar input { display: none; }
@@ -327,7 +327,6 @@ td small { color: var(--soluk); display: block; font-size: 12px; }
     <div class="kart-bas"><div><h3>Hızlı işlemler</h3></div></div>
     <div class="hizli">
       <button data-git="yeni"><span class="ikon"><svg class="ik"><use href="#i-arti"/></svg></span><span><b>Yeni sözleşme</b><small>Kiralayan ve araç bilgilerini girin</small></span></button>
-      <button data-git="excel"><span class="ikon"><svg class="ik"><use href="#i-tablo"/></svg></span><span><b>Excel'e aktar</b><small>Tüm sözleşme ve araç listesi</small></span></button>
       <button data-git="klasor"><span class="ikon"><svg class="ik"><use href="#i-klasor"/></svg></span><span><b>Çıktı klasörü</b><small>Üretilen PDF / Word dosyaları</small></span></button>
     </div>
   </div>
@@ -411,7 +410,6 @@ td small { color: var(--soluk); display: block; font-size: 12px; }
       <label><input type="radio" name="filtre" value="taslak">Taslak</label>
     </div>
     <span style="flex:1"></span>
-    <button class="btn" data-git="excel"><svg class="ik"><use href="#i-tablo"/></svg>Excel'e aktar</button>
     <button class="btn ana" data-git="yeni"><svg class="ik"><use href="#i-arti"/></svg>Yeni sözleşme</button>
   </div>
   <div class="tablo-sar"><table>
@@ -1043,10 +1041,6 @@ $$("[data-git]").forEach(b => b.onclick = async () => {
     if (formDegisti && !await onayla("Formdaki değişiklikler kaybolsun mu?", "Kaydedilmemiş bilgiler var.", "Devam et", true)) return;
     formDoldur(); sayfa("hazirla");
   }
-  if (g === "excel") {
-    if (!VERI.sozlesmeler.length) return bildir("Aktarılacak sözleşme yok");
-    const r = await api("/api/excel_tumu", {}); bildir(r.ok ? "Excel dosyası açılıyor…" : "Excel oluşturulamadı");
-  }
   if (g === "klasor") dosyaAc();
 });
 
@@ -1230,7 +1224,7 @@ window.addEventListener("beforeunload", e => { if (formDegisti) { e.preventDefau
   }, Math.max(0, 1400 - (Date.now() - bas)));
   baglaGuncellemeDugmeleri();
   setTimeout(guncellemeDurumu, 6000);          // sunucu açılışta GitHub'ı denetler
-  setInterval(guncellemeDurumu, 10 * 60 * 1000);
+  setInterval(guncellemeDurumu, 2 * 60 * 1000);
 })();
 </script>
 </body>

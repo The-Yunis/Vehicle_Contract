@@ -20,9 +20,6 @@ from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-
 from guncelleme import Guncelleyici, eskileri_temizle
 from surum import SURUM
 from uret import kiraci_bilgisi, pdf_yap, sozlesme_isle, tl
@@ -128,79 +125,6 @@ def kiralayan_kaydet(v, k, eski_kimlik=None):
     silinecek = {kimlik_anahtari(k), eski_kimlik or kimlik_anahtari(k)}
     v["kiralayanlar"] = [x for x in v["kiralayanlar"] if kimlik_anahtari(x) not in silinecek] + [k]
     v["kiralayanlar"].sort(key=lambda x: x.get("ad", "").casefold())
-
-
-# ---------------------------------------------------------------- excel çıktıları
-
-LACI = "003A5D"
-BASLIK_FONT = Font(bold=True, color="FFFFFF")
-BASLIK_DOLGU = PatternFill("solid", fgColor=LACI)
-INCE = Side(style="thin", color="C9D1DB")
-KENAR = Border(left=INCE, right=INCE, top=INCE, bottom=INCE)
-PARA = '#,##0.00 "TL"'
-
-
-def tablo_yaz(ws, satir, basliklar, kayitlar, para_sutunlari=(), genislik=None):
-    for j, b in enumerate(basliklar, 1):
-        c = ws.cell(satir, j, b)
-        c.font, c.fill, c.border = BASLIK_FONT, BASLIK_DOLGU, KENAR
-        c.alignment = Alignment(vertical="center", wrap_text=True)
-    for i, kayit in enumerate(kayitlar, satir + 1):
-        for j, deger in enumerate(kayit, 1):
-            c = ws.cell(i, j, deger)
-            c.border = KENAR
-            c.alignment = Alignment(vertical="top", wrap_text=True)
-            if j in para_sutunlari:
-                c.number_format = PARA
-    for j, g in enumerate(genislik or [], 1):
-        ws.column_dimensions[ws.cell(1, j).column_letter].width = g
-    ws.row_dimensions[satir].height = 30
-    return satir + len(kayitlar)
-
-
-def tr_tarih(iso):
-    return ".".join(reversed(iso.split("-"))) if iso else ""
-
-
-def tumu_excel(v, hedef):
-    oran = float(v["ayarlar"].get("KDV Oranı (%)") or 20)
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Sözleşmeler"
-    satirlar = []
-    for s in v["sozlesmeler"]:
-        k = s.get("kiralayan", {})
-        ara = sum(float(a.get("bedel") or 0) for a in s.get("araclar", []))
-        kdv = round(ara * oran / 100, 2)
-        satirlar.append([s["no"], "Üretildi" if s.get("durum") == "uretildi" else "Taslak", k.get("ad", ""),
-                         k.get("kimlik", ""), k.get("tel", ""), k.get("iban", ""), tr_tarih(s.get("baslangic")),
-                         tr_tarih(s.get("bitis")), s.get("teslim_yeri", ""), len(s.get("araclar", [])),
-                         ara, kdv, ara + kdv])
-    son = tablo_yaz(ws, 1, ["Sözleşme No", "Durum", "Kiralayan", "TCKN / VKN", "Telefon", "IBAN", "Teslim",
-                            "Bitiş", "Teslim Yeri", "Araç", "Aylık (KDV Hariç)", "KDV", "Aylık (KDV Dahil)"],
-                    satirlar, para_sutunlari=(11, 12, 13),
-                    genislik=[16, 11, 30, 14, 15, 32, 12, 12, 28, 7, 18, 15, 18])
-    if satirlar:
-        ws.cell(son + 1, 9, "TOPLAM").font = Font(bold=True)
-        ws.cell(son + 1, 10, f"=SUM(J2:J{son})").font = Font(bold=True)
-        for j, h in ((11, "K"), (12, "L"), (13, "M")):
-            c = ws.cell(son + 1, j, f"=SUM({h}2:{h}{son})")
-            c.number_format, c.font = PARA, Font(bold=True)
-    ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:M{max(son, 1)}"
-
-    ws2 = wb.create_sheet("Araçlar")
-    araclar = [[s["no"], s.get("kiralayan", {}).get("ad", ""), a.get("plaka", ""), a.get("cins", ""),
-                a.get("marka", ""), a.get("model", ""), a.get("yil", ""), a.get("sasi", ""),
-                a.get("ozellik", ""), a.get("atasman", ""), float(a.get("bedel") or 0),
-                tr_tarih(s.get("baslangic")), tr_tarih(s.get("bitis"))]
-               for s in v["sozlesmeler"] for a in s.get("araclar", [])]
-    son2 = tablo_yaz(ws2, 1, ["Sözleşme No", "Kiralayan", "Plaka", "Cinsi", "Marka", "Model", "Yıl", "Şasi No",
-                              "Teknik Özellik", "Ataşmanlar", "Aylık (KDV Hariç)", "Teslim", "Bitiş"],
-                     araclar, para_sutunlari=(11,), genislik=[16, 30, 12, 18, 14, 14, 7, 22, 22, 24, 18, 12, 12])
-    ws2.freeze_panes = "A2"
-    ws2.auto_filter.ref = f"A1:M{max(son2, 1)}"
-    wb.save(hedef)
 
 
 # ---------------------------------------------------------------- işlemler
@@ -318,7 +242,7 @@ def arka_planda_denetle():
     time.sleep(3)
     while True:
         GUNCELLEYICI.denetle()
-        time.sleep(4 * 3600)
+        time.sleep(30 * 60)
 
 
 # ---------------------------------------------------------------- http
@@ -415,11 +339,6 @@ class Isleyici(BaseHTTPRequestHandler):
                 return {"ok": False, "hata": "Dosya bulunamadı; taşınmış veya silinmiş olabilir. Yeniden üretin."}
             os.startfile(yol)
             return {"ok": True}
-        if y == "/api/excel_tumu":
-            hedef = cikti_klasoru(v) / f"Sozlesme_Listesi_{datetime.now():%Y-%m-%d_%H%M}.xlsx"
-            tumu_excel(v, hedef)
-            os.startfile(hedef)
-            return {"ok": True, "dosya": hedef.name}
         if y == "/api/klasor_sec":
             secilen = klasor_sec(str(cikti_klasoru(v)))
             return {"ok": bool(secilen), "klasor": str(Path(secilen)) if secilen else ""}

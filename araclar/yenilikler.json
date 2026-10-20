@@ -1,4 +1,8 @@
 {
+  "1.2.0": [
+    "Excel'e aktarma özelliği kaldırıldı; program yalnızca PDF ve Word sözleşme üretir.",
+    "Güncellemeler artık daha sık denetleniyor: program açıkken yeni sürüm en geç 30 dakikada bildirilir."
+  ],
   "1.1.0": [
     "Otomatik güncelleme: yeni sürüm çıktığında program sizi uyarır, tek tıkla güncellenir.",
     "Güncellemeden sonra yenilikler bu pencerede bir kez gösterilir.",
