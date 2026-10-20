@@ -1,4 +1,7 @@
 {
+  "1.5.1": [
+    "Düzeltme: Word PDF'e çevirirken takılırsa sözleşme artık yarıda kalmıyor; program bir kez daha deniyor, olmazsa Word dosyasını veriyor ve ne yapılacağını söylüyor."
+  ],
   "1.5.0": [
     "Program dosyasının yeni adı: Makine_Kontrat.exe. Bilgisayarınızdaki dosyanın adı değişmez; dilerseniz kendiniz değiştirebilirsiniz."
   ],

@@ -4,6 +4,7 @@ Kullanım:  python uret.py [excel_yolu] [cikti_klasoru]
 """
 import re
 import sys
+import time
 from datetime import date, datetime
 from pathlib import Path
 
@@ -449,28 +450,53 @@ def main():
     print("=" * 70)
 
 
-def pdf_yap(dosyalar):
-    """Word ile PDF üretir. Sorun olursa hata metnini döndürür (docx'ler yine de hazırdır)."""
+PDF_IPUCU = ("PDF oluşturulamadı; Word dosyası hazır. Word'de açık bir uyarı penceresi kalmış olabilir: "
+             "Word'ü bir kez açıp kapatın, sonra sözleşmeyi yeniden oluşturun.")
+
+
+def _word_ile_pdf(dosyalar):
+    """Tek deneme: yeni bir Word örneğiyle PDF'leri üretir. Hata olursa istisna fırlatır."""
+    import pythoncom
+    import win32com.client
+    pythoncom.CoInitialize()  # sunucu iş parçacığından çağrılabiliyor
+    word = win32com.client.DispatchEx("Word.Application")
+    try:
+        word.Visible = False
+        word.DisplayAlerts = 0  # wdAlertsNone: kaydetme/dönüştürme uyarıları otomasyonu kilitlemesin
+        for f in dosyalar:
+            belge = word.Documents.Open(str(Path(f).resolve()), ConfirmConversions=False, ReadOnly=True,
+                                        AddToRecentFiles=False, Visible=False)
+            try:
+                belge.SaveAs2(str(Path(f).with_suffix(".pdf").resolve()), FileFormat=17)
+            finally:
+                belge.Close(False)
+    finally:
+        try:
+            word.Quit(False)
+        except Exception:
+            pass  # Word yanıt vermiyorsa kapatma hatası asıl sonucu gölgelemesin
+
+
+def pdf_yap(dosyalar, deneme=2, gunluk=None):
+    """Word ile PDF üretir. Sorun olursa kullanıcıya gösterilecek metni döndürür (docx'ler yine de hazırdır).
+    gunluk: asıl hatayı kaydetmek için çağrılacak fonksiyon (ör. kms.gunluge_yaz)."""
     if not dosyalar:
         return None
-    try:
-        import pythoncom
-        import win32com.client
-        pythoncom.CoInitialize()  # sunucu iş parçacığından çağrılabiliyor
-        word = win32com.client.DispatchEx("Word.Application")
-    except Exception as e:  # Word yoksa sadece docx üretilir
-        return f"PDF oluşturulamadı (Word açılamadı): {e}"
-    word.Visible = False
-    try:
-        for f in dosyalar:
-            belge = word.Documents.Open(str(Path(f).resolve()), ReadOnly=True)
-            belge.SaveAs2(str(Path(f).with_suffix(".pdf").resolve()), FileFormat=17)
-            belge.Close(False)
-    except Exception as e:
-        return f"PDF hatası (Word dosyası hazır): {e}"
-    finally:
-        word.Quit()
-    return None
+    son_hata = None
+    for i in range(deneme):
+        try:
+            _word_ile_pdf(dosyalar)
+            if all(Path(f).with_suffix(".pdf").exists() for f in dosyalar):
+                return None
+            son_hata = RuntimeError("Word PDF dosyasını oluşturmadı")
+        except ImportError:
+            return "PDF oluşturulamadı: bu bilgisayarda Microsoft Word bulunamadı. Word dosyası hazır."
+        except Exception as e:
+            son_hata = e
+        time.sleep(2)  # ikinci deneme yeni bir Word örneğiyle
+    if gunluk:
+        gunluk(f"PDF oluşturulamadı ({deneme} deneme): {son_hata!r}")
+    return PDF_IPUCU
 
 
 if __name__ == "__main__":

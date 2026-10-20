@@ -175,13 +175,15 @@ def uret(v, istek):
     eski_no = istek.get("eski_no")
     if sonuc["ok"]:
         docx_yolu = sonuc["hedef"]
+        pdf_olmadi = False
         if secim.get("pdf"):
-            hata = pdf_yap([docx_yolu])
+            hata = pdf_yap([docx_yolu], gunluk=gunluge_yaz)
             if hata:
                 cevap["uyarilar"].append(hata)
+                pdf_olmadi = True
             elif docx_yolu.with_suffix(".pdf").exists():
                 cevap["dosyalar"].append(docx_yolu.with_suffix(".pdf").name)
-        if secim.get("docx"):
+        if secim.get("docx") or pdf_olmadi:  # PDF yapılamadıysa elde en azından Word dosyası kalsın
             cevap["dosyalar"].insert(0, docx_yolu.name)
         else:
             docx_yolu.unlink(missing_ok=True)
