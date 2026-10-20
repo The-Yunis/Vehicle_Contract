@@ -1,4 +1,4 @@
-"""KMS Sözleşme — Araç Kiralama Sözleşme Sistemi (masaüstü uygulaması).
+"""Makine Kontrat — Araç Kiralama Sözleşme Sistemi (masaüstü uygulaması).
 
 Arayüz, Edge'in uygulama modunda (adres çubuksuz pencere) açılır; arka planda yalnızca
 bu bilgisayardan erişilebilen küçük bir yerel sunucu çalışır.
@@ -24,7 +24,7 @@ from guncelleme import Guncelleyici, eskileri_temizle
 from surum import SURUM
 from uret import kiraci_bilgisi, pdf_yap, sozlesme_isle, tl
 
-AD = "KMS Sözleşme"
+AD = "Makine Kontrat"
 IMZA = "Coded by Yunus Açıkgöz"
 PORT = 8765
 
@@ -37,6 +37,7 @@ VARSAYILAN_SABLON = KAYNAK / "SABLON.docx" if (KAYNAK / "SABLON.docx").exists() 
     else KAYNAK.parent / "SABLON.docx"
 LOGOLAR = [VARLIK / "logo_oztac.png", VARLIK / "logo_hika.png"]
 
+# Klasör adları eski adla kalır: mevcut kullanıcıların kayıtları ve çıktıları kaybolmasın
 VERI_KLASOR = Path(os.environ.get("APPDATA", Path.home())) / "KMS Sozlesme"
 VERI = VERI_KLASOR / "kayitlar.json"
 OZEL_SABLON = VERI_KLASOR / "sablon.docx"

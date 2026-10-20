@@ -22,12 +22,12 @@ SURUM_DOSYASI = """VSVersionInfo(
   kids=[
     StringFileInfo([StringTable('041F04B0', [
       StringStruct('CompanyName', 'ÖZTAÇ PETROL A.Ş. - Hİ-KA NAK. LTD. ŞTİ. İş Ortaklığı'),
-      StringStruct('FileDescription', 'KMS Sözleşme - Araç Kiralama Sözleşme Sistemi'),
+      StringStruct('FileDescription', 'Makine Kontrat - Araç Kiralama Sözleşme Sistemi'),
       StringStruct('FileVersion', '{s}'),
       StringStruct('InternalName', 'KMS_Sozlesme'),
       StringStruct('LegalCopyright', 'Coded by Yunus Açıkgöz'),
       StringStruct('OriginalFilename', '{exe}'),
-      StringStruct('ProductName', 'KMS Sözleşme'),
+      StringStruct('ProductName', 'Makine Kontrat'),
       StringStruct('ProductVersion', '{s}'),
       StringStruct('Comments', 'Coded by Yunus Açıkgöz')])]),
     VarFileInfo([VarStruct('Translation', [0x041F, 1200])])

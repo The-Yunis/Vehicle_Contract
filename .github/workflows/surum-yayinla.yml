@@ -32,6 +32,6 @@ jobs:
       - name: Release oluştur
         uses: softprops/action-gh-release@v2
         with:
-          name: KMS Sözleşme ${{ github.ref_name }}
+          name: Makine Kontrat ${{ github.ref_name }}
           body_path: build/notlar.md
           files: DAGITIM/KMS_Sozlesme.exe

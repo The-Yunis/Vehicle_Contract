@@ -37,7 +37,7 @@ def main():
         print(f"  - {n}")
     if input("Onaylıyor musunuz? (e/h) ").strip().lower() != "e":
         sys.exit("Vazgeçildi.")
-    for komut in (("tag", "-a", etiket, "-m", f"KMS Sözleşme {etiket}"), ("push", "origin", etiket)):
+    for komut in (("tag", "-a", etiket, "-m", f"Makine Kontrat {etiket}"), ("push", "origin", etiket)):
         r = git(*komut)
         if r.returncode:
             sys.exit(f"HATA: git {' '.join(komut)}\n{r.stderr}")

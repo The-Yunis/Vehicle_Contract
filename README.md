@@ -1,4 +1,4 @@
-# KMS Sözleşme
+# Makine Kontrat
 
 Karla mücadele işleri için iş makinası kiralama sözleşmelerini hazırlayan masaüstü programı.
 Kiralayan ve araç bilgileri girilir; Kiracı lehine düzenlenmiş şablondan PDF / Word sözleşme,
@@ -37,6 +37,7 @@ python araclar/derle.py            # DAGITIM/KMS_Sozlesme.exe üret
 | `araclar/sablon_olustur.py` | Şablonu şirketin orijinal taslağından üretir (taslak repoda değil) |
 
 Kullanıcı kayıtları `%APPDATA%\KMS Sozlesme`, çıktılar `Belgeler\KMS Sözleşmeler` altında tutulur.
+Programın eski adı "KMS Sözleşme"ydi; exe ve klasör adları geriye uyumluluk için bu adla kalır.
 
 ---
 Coded by Yunus Açıkgöz

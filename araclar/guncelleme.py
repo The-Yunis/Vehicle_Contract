@@ -16,7 +16,7 @@ from surum import EXE_ADI, REPO, SURUM
 
 # KMS_GUNCELLEME_API yalnızca test içindir (sahte bir sürüm sunucusuna yönlendirmek için)
 API = os.environ.get("KMS_GUNCELLEME_API") or f"https://api.github.com/repos/{REPO}/releases/latest"
-BASLIK = {"User-Agent": f"KMS-Sozlesme/{SURUM}", "Accept": "application/vnd.github+json"}
+BASLIK = {"User-Agent": f"Makine-Kontrat/{SURUM}", "Accept": "application/vnd.github+json"}
 
 
 def surum_sayisi(metin):

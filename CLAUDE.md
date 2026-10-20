@@ -1,4 +1,4 @@
-# CLAUDE.md — KMS Sözleşme
+# CLAUDE.md — Makine Kontrat
 
 Bu dosya, projede çalışan Claude'un (hangi bilgisayarda olursa olsun) bağlamı bilmesi içindir.
 Repo **public**: buraya kişisel veri (TC, IBAN, e-posta, kiralayan bilgisi) yazma.
@@ -6,7 +6,9 @@ Repo **public**: buraya kişisel veri (TC, IBAN, e-posta, kiralayan bilgisi) yaz
 ## Proje ne?
 
 Karayolları karla mücadele işinde kiralanan iş makinaları için **kiralama sözleşmesi üreten Windows masaüstü programı**
-(`KMS_Sozlesme.exe`). Kullanıcı (Yunus) ve şirketteki yönetici arkadaşları kullanıyor.
+(`KMS_Sozlesme.exe`). Eski adı "KMS Sözleşme"; v1.3.0'da "Makine Kontrat" oldu. **Exe adı (`KMS_Sozlesme.exe`, eski
+sürümler güncellemeyi bu adla arar), `%APPDATA%\KMS Sozlesme` ve `Belgeler\KMS Sözleşmeler` klasörleri bilerek eski adla kalır** —
+değiştirmek güncelleme zincirini koparır / kullanıcı kayıtlarını kaybettirir. Kullanıcı (Yunus) ve şirketteki yönetici arkadaşları kullanıyor.
 
 - Şirket **KİRACI** taraf: ÖZTAÇ PETROL A.Ş. – Hİ-KA NAK. LTD. ŞTİ. İş Ortaklığı. Sözleşme maddeleri **Kiracı lehine** düzenlenir.
   Şirkete gelen "düzeltme notları" Kiralayan gözünden yazılmıştı; körü körüne uygulanmadı.
