@@ -1,4 +1,7 @@
 {
+  "1.5.3": [
+    "Öztaç ve HİKA logoları her yerde (sözleşme başlığı, program, açılış ekranı) eşit görsel ağırlıkta ve daha sade boyutta."
+  ],
   "1.5.2": [
     "Program açılırken pencere bir an şeffaf görünüp masaüstü arkadan seçiliyordu; artık açılışta tam ekran bir karşılama ekranı gösteriliyor ve program hazır olunca açılıyor."
   ],

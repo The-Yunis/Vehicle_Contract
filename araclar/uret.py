@@ -9,7 +9,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 import docx
-from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
@@ -229,6 +229,18 @@ def tum_paragraflar(doc):
                 yield from tablolar(kisim.tables)
 
 
+LOGO_ALANI = 1.8   # cm²: her logonun sayfa başlığında kaplayacağı yaklaşık alan
+
+
+def logo_orani(yol):
+    """PNG başlığından en/boy oranı (ek kütüphane gerektirmeden)."""
+    import struct
+    with open(yol, "rb") as f:
+        f.seek(16)
+        en, boy = struct.unpack(">II", f.read(8))
+    return en / boy
+
+
 def logo_basligi(doc, logolar):
     """Sayfa başlığına logoları yan yana (sol/sağ) yerleştirir."""
     bolum = doc.sections[0]
@@ -239,7 +251,10 @@ def logo_basligi(doc, logolar):
     for i, (c, logo) in enumerate(zip(t.rows[0].cells, logolar)):
         p = c.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT if i == 0 else WD_ALIGN_PARAGRAPH.RIGHT
-        p.add_run().add_picture(str(logo), height=Cm(1.0))
+        # Logoların en-boy oranı farklı (Öztaç 2,85 : 1, HİKA 4,32 : 1); aynı yükseklikte HİKA çok
+        # daha iri görünür. Kapladıkları alanı eşitlemek için yükseklik oranın kareköküyle ölçeklenir.
+        p.add_run().add_picture(str(logo), height=Cm((LOGO_ALANI / logo_orani(logo)) ** 0.5))
+        c.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
     ilk = bas.paragraphs[0]
     if not ilk.text:
         ilk._p.getparent().remove(ilk._p)
