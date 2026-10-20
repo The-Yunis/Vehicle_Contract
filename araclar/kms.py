@@ -383,7 +383,8 @@ def pencere_ac(adres):
         return None
     return subprocess.Popen([
         str(tarayici), f"--app={adres}", f"--user-data-dir={VERI_KLASOR / 'pencere'}",
-        "--window-size=1320,880", "--no-first-run", "--no-default-browser-check",
+        "--start-maximized",  # pencere her açılışta tam ekran büyütülmüş gelir
+        "--no-first-run", "--no-default-browser-check",
         "--disable-features=Translate,msEdgeSidebarV2", "--disable-sync",
     ])
 
