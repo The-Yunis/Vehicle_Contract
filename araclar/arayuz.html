@@ -801,7 +801,10 @@ function olusturPenceresi() {
     <div class="pencere-govde"><div class="cikti-secim">${DOSYA_TURLERI.map(([k, ad, ac, renk, kisa]) => `
       <label><input type="checkbox" value="${k}" ${secili[k] ? "checked" : ""}><span class="tik">${ik("tik")}</span>
         <div class="dosya-ikon" style="background:${renk}">${kisa}</div><b>${ad}</b><small>${ac}</small></label>`).join("")}
-    </div><div id="olustur_mesaj" style="margin-top:12px"></div></div>
+    </div>
+    <label class="anahtar" style="margin-top:16px"><input type="checkbox" id="olustur_logo" ${VERI.ayarlar["Sözleşmeye Logo Ekle"] !== false ? "checked" : ""}>
+      <span class="yuva"></span><span><b>Şirket logolarını ekle</b><br><small style="color:var(--soluk)">Öztaç ve HİKA logoları her sayfanın üstünde yer alır.</small></span></label>
+    <div id="olustur_mesaj" style="margin-top:12px"></div></div>
     <div class="pencere-alt"><button class="btn" data-kapat>Vazgeç</button>
       <button class="btn ana" id="olustur_basla">${ik("belge")}Oluştur</button></div>`);
   $("#olustur_basla", p).onclick = () => olustur(p);
@@ -809,6 +812,7 @@ function olusturPenceresi() {
 async function olustur(p) {
   const cikti = {};
   $$(".cikti-secim input", p).forEach(i => cikti[i.value] = i.checked);
+  const logo = $("#olustur_logo", p).checked;
   if (!Object.values(cikti).some(Boolean)) {
     $("#olustur_mesaj").innerHTML = `<div class="uyari-kutu kirmizi">${ik("uyari")}<div>En az bir çıktı türü seçin.</div></div>`; return;
   }
@@ -818,8 +822,8 @@ async function olustur(p) {
   $("#perde").dataset.kilitli = "1";
   const soz = formOku();
   try {
-    api("/api/ayarlar", { "Çıktılar": cikti });
-    const r = await api("/api/uret", { sozlesme: soz, cikti, eski_no: duzenlenen });
+    await api("/api/ayarlar", { "Çıktılar": cikti, "Sözleşmeye Logo Ekle": logo });
+    const r = await api("/api/uret", { sozlesme: soz, cikti: { ...cikti, logo }, eski_no: duzenlenen });
     await veriYukle();
     $("#perde").dataset.kilitli = "";
     if (r.ok) {
@@ -1010,6 +1014,16 @@ function ayarlarOku() {
   return a;
 }
 $("#ayar_kaydet").onclick = async () => { await api("/api/ayarlar", ayarlarOku()); await veriYukle(); bildir("Ayarlar kaydedildi"); };
+// Ayarlar "Kaydet"e basılmasa da kaybolmasın: her değişiklik anında kaydedilir
+$("#ayarlar").addEventListener("change", async e => {
+  if (!e.target.matches("[data-ayar], #logo_ekle")) return;
+  const a = ayarlarOku();
+  await api("/api/ayarlar", a);
+  Object.assign(VERI.ayarlar, a);
+  if (e.target.dataset.ayar === "KDV Oranı (%)") hesapla();
+  panelCiz();
+  bildir("Kaydedildi");
+});
 $("#klasor_sec").onclick = async () => {
   const r = await api("/api/klasor_sec", {});
   if (r.ok) { $("[data-ayar='Çıktı Klasörü']").value = r.klasor; bildir("Klasör seçildi; kaydetmeyi unutmayın"); }

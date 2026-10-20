@@ -11,6 +11,7 @@ import docx
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 
+from bicim import kurumsal_bicim
 from ortak import metin_degistir, paragraf_ekle_sonra, paragraf_sil, paragraf_yaz
 
 KOK = Path(__file__).resolve().parent.parent
@@ -206,6 +207,7 @@ def main():
         if rel.reltype.endswith(("/comments", "/commentsExtended", "/commentsIds", "/commentsExtensible")):
             doc.part.drop_rel(rel.rId)
 
+    kurumsal_bicim(doc)
     doc.save(HEDEF)
     print(f"Şablon oluşturuldu: {HEDEF}")
 

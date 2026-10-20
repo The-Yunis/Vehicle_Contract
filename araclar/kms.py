@@ -165,7 +165,9 @@ def uret(v, istek):
     R, uyarilar_genel = kiraci_bilgisi(ayar)
     s, araclar = form_to_uretici(soz)
     klasor = cikti_klasoru(v)
-    logolar = [l for l in LOGOLAR if l.exists()] if ayar.get("Sözleşmeye Logo Ekle", True) else []
+    # Oluştur penceresindeki seçim önceliklidir; yoksa Ayarlar'daki varsayılan
+    logo_ekle = secim.get("logo", ayar.get("Sözleşmeye Logo Ekle", True))
+    logolar = [l for l in LOGOLAR if l.exists()] if logo_ekle else []
     sonuc = sozlesme_isle(s, araclar, R, float(ayar.get("KDV Oranı (%)") or 20), uyarilar_genel,
                           cikti=klasor, sablon=sablon_yolu(), logolar=logolar)
     cevap = {"ok": sonuc["ok"], "hatalar": sonuc["hatalar"],

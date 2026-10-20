@@ -1,4 +1,10 @@
 {
+  "1.4.0": [
+    "Sözleşmeler kurumsal sayfa düzeninde: tek tip yazı, hizalı madde girintileri, kalın madde numaraları, iki yana yaslı metin.",
+    "Her sayfanın altında sözleşme no, sayfa numarası ve paraf alanı.",
+    "İmza tablosunda imza ve kaşe için daha geniş alan.",
+    "Düzeltme: Logo ayarı kapatıldığında logolar artık sözleşmeye eklenmiyor. Ayarlar değiştirildiği anda kaydediliyor; Oluştur penceresinde de logo seçeneği var."
+  ],
   "1.3.0": [
     "Programın yeni adı: Makine Kontrat. Kayıtlarınız ve sözleşmeleriniz olduğu gibi duruyor."
   ],

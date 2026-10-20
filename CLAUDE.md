@@ -32,6 +32,7 @@ değiştirmek güncelleme zincirini koparır / kullanıcı kayıtlarını kaybet
 | `araclar/yayinla.py` | Kontrolleri yapıp `vX.Y.Z` etiketini gönderir. |
 | `.github/workflows/surum-yayinla.yml` | Etiket gelince Windows runner'da exe'yi derleyip Release'e yükler. |
 | `SABLON.docx` | Sözleşme şablonu (hukukçu yorumları ve renkli vurgular temizlenmiş). |
+| `araclar/bicim.py` | Şablonun kurumsal sayfa düzeni (sablon_olustur'un son adımı): A4, sol 2,5 / diğer 2 cm; Calibri 11, 1,15 satır, iki yana yaslı; "MADDE n: BAŞLIK"; x.y. maddeler 1 cm, x.y.z. maddeler 2,2 cm asılı girinti, numaralar kalın; taraf bilgilerinde iki nokta 4,2 cm'de hizalı; altbilgide sözleşme no + "Sayfa X / Y" + paraf alanı. **Biçim değişikliği burada yapılır, SABLON.docx elle düzenlenmez.** |
 | `araclar/sablon_olustur.py` | Şablonu şirketin orijinal taslağından üretir. Orijinal taslak hukukçu yorumları içerdiği için **repoda yok** (`.gitignore`). |
 | `araclar/form*.py/html`, `excel_olustur.py`, `SOZLESME_*.bat` | Eski denemeler (tarayıcı formu, Excel ile üretim). Artık kullanılmıyor. |
 
@@ -51,6 +52,8 @@ Kod, tanımlayıcılar ve yorumlar **Türkçe**; aynı üslupla devam et.
 - **CI'da Türkçe karakter:** Windows runner konsolu cp1252; `PYTHONUTF8=1` olmadan `print("Hazır")` çöker (workflow'da ayarlı).
 - **Test derlemeleri:** Kullanıcının açık programı genellikle `DAGITIM\KMS_Sozlesme.exe`'dir. Test exe'lerini **her zaman** `python araclar/derle.py --cikti <geçici klasör>` ile derle, `DAGITIM`'e değil.
 - **Sahte güncelleme sunucusuyla test:** `KMS_GUNCELLEME_API` ortam değişkeni sahte `latest.json`'a yönlendirir. Python `http.server` süreçleri farklı adla (`python3.13.exe`) çalışabilir; kapatırken işlem adına değil komut satırına göre bul. Windows aynı porta iki sunucunun bağlanmasına izin verir — eski sunucu kalırsa yanlış dosya sunulur.
+- **Ayarlar anında kaydedilir** (v1.4.0). Önceden yalnızca "Ayarları kaydet" düğmesiyle kaydediliyordu; kullanıcı logo anahtarını kapatıp düğmeye basmadığı için logolar çıkmaya devam etti. Oluştur penceresinde de logo anahtarı var (`cikti.logo`, Ayarlar'daki varsayılandan önceliklidir).
+- Şablonu yeniden üretmek için orijinal taslak (`İŞ MAKİNASI KİRALAMA SÖZLEŞMESİ*.docx`, repoda yok) proje köküne konmalı; sonra `python araclar/sablon_olustur.py`.
 - Test sırasında kullanıcının gerçek kayıtlarına dokunma: `APPDATA`'yı geçici bir klasöre yönlendir; sunucuyu `--sunucu --port N` ile pencere açmadan çalıştır.
 
 ## Mac'te geliştirme

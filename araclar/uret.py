@@ -214,11 +214,18 @@ def tutanaklar(doc, d, araclar):
 
 
 def tum_paragraflar(doc):
+    def tablolar(tablolar_):
+        for t in tablolar_:
+            for satir in t.rows:
+                for c in satir.cells:
+                    yield from c.paragraphs
     yield from doc.paragraphs
-    for t in doc.tables:
-        for satir in t.rows:
-            for c in satir.cells:
-                yield from c.paragraphs
+    yield from tablolar(doc.tables)
+    for bolum in doc.sections:  # altbilgide {{SOZ_NO}} var
+        for kisim in (bolum.header, bolum.footer):
+            if not kisim.is_linked_to_previous:
+                yield from kisim.paragraphs
+                yield from tablolar(kisim.tables)
 
 
 def logo_basligi(doc, logolar):
