@@ -1058,6 +1058,8 @@ function sayfa(ad) {
   $$("#menu button").forEach(b => b.classList.toggle("aktif", b.dataset.sayfa === ad));
   [$("#baslik").textContent, $("#altbaslik").textContent] = BASLIKLAR[ad];
   if (ad === "hazirla" && duzenlenen) $("#altbaslik").textContent = `${duzenlenen} düzenleniyor`;
+  const kisi = (VERI.ayarlar["Kullanıcı Adı"] || "").trim().split(/\s+/)[0];
+  if (ad === "panel" && kisi) $("#altbaslik").textContent = `Hoş geldiniz, ${kisi} 👋 · Genel durum ve hızlı işlemler`;
   $("#icerik").scrollTop = 0;
 }
 $$("#menu button").forEach(b => b.onclick = () => sayfa(b.dataset.sayfa));

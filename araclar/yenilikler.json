@@ -1,4 +1,7 @@
 {
+  "1.2.2": [
+    "Panelde kullanıcıya adıyla hoş geldiniz mesajı gösteriliyor (güncelleme testi)."
+  ],
   "1.2.1": [
     "Güncellemeden sonra programın kendiliğinden yeniden açılmaması sorunu giderildi."
   ],
