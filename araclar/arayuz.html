@@ -1228,16 +1228,23 @@ window.addEventListener("beforeunload", e => { if (formDegisti) { e.preventDefau
 
 (async () => {
   const bas = Date.now();
+  // Program kendi (yerel) açılış ekranını gösterdiyse sayfadaki açılış animasyonu atlanır
+  const yerelAcilis = new URLSearchParams(location.search).has("yerel_acilis");
+  if (yerelAcilis) { $("#acilis").style.transition = "none"; history.replaceState(null, "", location.pathname + location.hash); }
   await veriYukle();
   const taslak = VERI.sozlesmeler.filter(s => s.durum !== "uretildi").pop();
   formDoldur(taslak || null);
   if (taslak) hepsiniKontrol($("#hazirla"));
   sayfa(BASLIKLAR[location.hash.slice(1)] ? location.hash.slice(1) : "panel");
+  if (yerelAcilis) {   // sayfa ekrana çizildikten sonra programa "hazırım" de
+    $("#acilis").classList.add("gizle");
+    requestAnimationFrame(() => requestAnimationFrame(() => api("/api/hazir", {}).catch(() => {})));
+  }
   setTimeout(() => {
     $("#acilis").classList.add("gizle");
     if (!VERI.ayarlar["Kullanıcı Kodu"]) ilkKurulum();
     else if (VERI.ayarlar["Son Görülen Sürüm"] !== VERI.surum) yeniliklerPenceresi(true);
-  }, Math.max(0, 1400 - (Date.now() - bas)));
+  }, yerelAcilis ? 0 : Math.max(0, 1400 - (Date.now() - bas)));
   baglaGuncellemeDugmeleri();
   setTimeout(guncellemeDurumu, 6000);          // sunucu açılışta GitHub'ı denetler
   setInterval(guncellemeDurumu, 2 * 60 * 1000);

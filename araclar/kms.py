@@ -64,6 +64,7 @@ VARSAYILAN_AYARLAR = {
 
 KILIT = threading.Lock()
 SON_NABIZ = [time.time()]
+SAYFA_HAZIR = threading.Event()   # arayüz ilk kez tamamen çizildiğinde (/api/hazir)
 GUNCELLEYICI = Guncelleyici()
 SUNUCU = [None]
 
@@ -298,6 +299,9 @@ class Isleyici(BaseHTTPRequestHandler):
         try:
             uzunluk = int(self.headers.get("Content-Length") or 0)
             istek = json.loads(self.rfile.read(uzunluk) or b"{}")
+            if self.path == "/api/hazir":
+                SAYFA_HAZIR.set()
+                return self.gonder(200, {"ok": True})
             if self.path == "/api/nabiz":
                 SON_NABIZ[0] = time.time()
                 return self.gonder(200, {"ok": True})
@@ -394,6 +398,60 @@ def pencere_ac(adres):
     ])
 
 
+class AcilisEkrani:
+    """Edge penceresi ilk çizimini yapana kadar (o arada pencere şeffaf görünür ve arkadaki
+    masaüstü seçilir) çalışma alanını kaplayan beyaz bir açılış ekranı gösterir."""
+
+    LACI, SOLUK, SARI = "#003a5d", "#667085", "#e8b400"
+
+    def __init__(self):
+        import ctypes.wintypes
+        import tkinter as tk
+        self.tk = tk
+        self.kok = kok = tk.Tk()
+        kok.overrideredirect(True)
+        kok.attributes("-topmost", True)
+        kok.configure(bg="white")
+        alan = ctypes.wintypes.RECT()   # görev çubuğu hariç çalışma alanı (büyütülmüş pencereyle aynı)
+        ctypes.windll.user32.SystemParametersInfoW(0x30, 0, ctypes.byref(alan), 0)
+        kok.geometry(f"{alan.right - alan.left}x{alan.bottom - alan.top}+{alan.left}+{alan.top}")
+        orta = tk.Frame(kok, bg="white")
+        orta.place(relx=0.5, rely=0.5, anchor="center")
+        logolar = tk.Frame(orta, bg="white")
+        logolar.pack()
+        self.resimler = [tk.PhotoImage(file=str(VARLIK / ad)) for ad in ("acilis_oztac.png", "acilis_hika.png")]
+        tk.Label(logolar, image=self.resimler[0], bg="white", bd=0).pack(side="left")
+        tk.Frame(logolar, bg="#cfd6e0", width=1, height=56).pack(side="left", padx=34)
+        tk.Label(logolar, image=self.resimler[1], bg="white", bd=0).pack(side="left")
+        tk.Label(orta, text="Makine Kontrat", font=("Segoe UI", 20, "bold"), fg=self.LACI, bg="white").pack(pady=(30, 0))
+        tk.Label(orta, text="Araç Kiralama Sözleşme Sistemi · Karla Mücadele", font=("Segoe UI", 10),
+                 fg=self.SOLUK, bg="white").pack(pady=(2, 0))
+        self.cubuk = tk.Canvas(orta, width=220, height=3, bg="#e3e8ef", highlightthickness=0)
+        self.cubuk.pack(pady=(28, 0))
+        self.serit = self.cubuk.create_rectangle(0, 0, 88, 3, fill=self.SARI, width=0)
+        imza = tk.Frame(kok, bg="white")
+        imza.place(relx=0.5, rely=1.0, y=-26, anchor="s")
+        tk.Label(imza, text="Coded by ", font=("Segoe UI", 9), fg=self.SOLUK, bg="white").pack(side="left")
+        tk.Label(imza, text="Yunus Açıkgöz", font=("Segoe UI", 9, "bold"), fg=self.LACI, bg="white").pack(side="left")
+        self.konum = -88
+        kok.update()
+
+    def bekle(self, olay, en_az=1.2, en_cok=25):
+        bas = time.time()
+
+        def tik():
+            self.konum = self.konum + 6 if self.konum < 220 else -88
+            self.cubuk.coords(self.serit, self.konum, 0, self.konum + 88, 3)
+            gecen = time.time() - bas
+            if (olay.is_set() and gecen >= en_az) or gecen >= en_cok:
+                self.kok.after(150, self.kok.destroy)   # sayfa ekrana basılsın, sonra kalk
+                return
+            self.kok.after(16, tik)
+
+        tik()
+        self.kok.mainloop()
+
+
 def calisan_uygulama_var():
     try:
         with urllib.request.urlopen(f"http://127.0.0.1:{PORT}/api/kimlik", timeout=1) as r:
@@ -431,7 +489,16 @@ def main():
         if sys.stdout:  # konsolsuz exe'de stdout yoktur
             print(adres, flush=True)
         threading.Event().wait()
-    surec = None if devam else pencere_ac(adres)
+    acilis = None
+    if not devam:
+        try:
+            acilis = AcilisEkrani()
+        except Exception:
+            gunluge_yaz("Açılış ekranı gösterilemedi:\n" + traceback.format_exc())
+    # Açılış ekranı varsa sayfa kendi açılış animasyonunu atlar ve hazır olunca haber verir
+    surec = None if devam else pencere_ac(adres + ("?yerel_acilis=1" if acilis else ""))
+    if acilis:
+        acilis.bekle(SAYFA_HAZIR)
     SON_NABIZ[0] = time.time()
     # Pencere kapanınca kapan: tarayıcı süreci bitti ve sayfa artık nabız göndermiyor
     while True:

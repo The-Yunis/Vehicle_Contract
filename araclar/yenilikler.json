@@ -1,4 +1,7 @@
 {
+  "1.5.2": [
+    "Program açılırken pencere bir an şeffaf görünüp masaüstü arkadan seçiliyordu; artık açılışta tam ekran bir karşılama ekranı gösteriliyor ve program hazır olunca açılıyor."
+  ],
   "1.5.1": [
     "Düzeltme: Word PDF'e çevirirken takılırsa sözleşme artık yarıda kalmıyor; program bir kez daha deniyor, olmazsa Word dosyasını veriyor ve ne yapılacağını söylüyor."
   ],
