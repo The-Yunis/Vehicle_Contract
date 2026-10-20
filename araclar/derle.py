@@ -24,7 +24,7 @@ SURUM_DOSYASI = """VSVersionInfo(
       StringStruct('CompanyName', 'ÖZTAÇ PETROL A.Ş. - Hİ-KA NAK. LTD. ŞTİ. İş Ortaklığı'),
       StringStruct('FileDescription', 'Makine Kontrat - Araç Kiralama Sözleşme Sistemi'),
       StringStruct('FileVersion', '{s}'),
-      StringStruct('InternalName', 'KMS_Sozlesme'),
+      StringStruct('InternalName', 'Makine_Kontrat'),
       StringStruct('LegalCopyright', 'Coded by Yunus Açıkgöz'),
       StringStruct('OriginalFilename', '{exe}'),
       StringStruct('ProductName', 'Makine Kontrat'),

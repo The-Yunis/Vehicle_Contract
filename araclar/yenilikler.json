@@ -1,4 +1,7 @@
 {
+  "1.5.0": [
+    "Program dosyasının yeni adı: Makine_Kontrat.exe. Bilgisayarınızdaki dosyanın adı değişmez; dilerseniz kendiniz değiştirebilirsiniz."
+  ],
   "1.4.1": [
     "Düzeltme: Program açıkken exe dosyasının adı değiştirildiğinde güncelleme yarıda kalıyordu; artık sorunsuz güncelleniyor."
   ],

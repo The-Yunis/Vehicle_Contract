@@ -12,7 +12,7 @@ import threading
 import urllib.request
 from pathlib import Path
 
-from surum import EXE_ADI, REPO, SURUM
+from surum import ESKI_EXE_ADI, EXE_ADI, REPO, SURUM
 
 # KMS_GUNCELLEME_API yalnızca test içindir (sahte bir sürüm sunucusuna yönlendirmek için)
 API = os.environ.get("KMS_GUNCELLEME_API") or f"https://api.github.com/repos/{REPO}/releases/latest"
@@ -101,7 +101,8 @@ class Guncelleyici:
             self.guncelle_durum(asama="bekliyor", hata=f"Güncelleme sunucusuna ulaşılamadı: {e}")
             return self.ozet()
         yeni = rel.get("tag_name", "")
-        varlik = next((a for a in rel.get("assets", []) if a.get("name") == EXE_ADI), None)
+        varliklar = {a.get("name"): a for a in rel.get("assets", [])}
+        varlik = varliklar.get(EXE_ADI) or varliklar.get(ESKI_EXE_ADI)
         var = bool(varlik) and surum_sayisi(yeni) > surum_sayisi(SURUM)
         self.varlik = varlik
         self.guncelle_durum(asama="bekliyor", var=var, yeni=yeni.lstrip("vV"), notlar=rel.get("body") or "",

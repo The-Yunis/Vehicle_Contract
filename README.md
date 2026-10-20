@@ -4,7 +4,8 @@ Karla mücadele işleri için iş makinası kiralama sözleşmelerini hazırlaya
 Kiralayan ve araç bilgileri girilir; Kiracı lehine düzenlenmiş şablondan PDF / Word sözleşme,
 her araç için teslim/iade tutanağıyla birlikte üretilir.
 
-**İndir:** [Releases](../../releases/latest) sayfasından `KMS_Sozlesme.exe`. Kurulum gerekmez.
+**İndir:** [Releases](../../releases/latest) sayfasından `Makine_Kontrat.exe`. Kurulum gerekmez.
+(Release'teki `KMS_Sozlesme.exe` aynı dosyadır; eski sürümlerin güncellenebilmesi için duruyor.)
 Program yeni sürümleri kendisi bulur ve tek tıkla günceller.
 
 ## Yeni sürüm yayınlamak
@@ -24,7 +25,7 @@ Programı açık olan herkes en geç birkaç saat içinde, diğerleri ilk açıl
 ```
 pip install -r requirements.txt
 python araclar/kms.py              # programı kaynak koddan çalıştır
-python araclar/derle.py            # DAGITIM/KMS_Sozlesme.exe üret
+python araclar/derle.py            # DAGITIM/Makine_Kontrat.exe üret
 ```
 
 | Dosya | Görevi |
@@ -37,7 +38,7 @@ python araclar/derle.py            # DAGITIM/KMS_Sozlesme.exe üret
 | `araclar/sablon_olustur.py` | Şablonu şirketin orijinal taslağından üretir (taslak repoda değil) |
 
 Kullanıcı kayıtları `%APPDATA%\KMS Sozlesme`, çıktılar `Belgeler\KMS Sözleşmeler` altında tutulur.
-Programın eski adı "KMS Sözleşme"ydi; exe ve klasör adları geriye uyumluluk için bu adla kalır.
+Programın eski adı "KMS Sözleşme"ydi; kayıt/çıktı klasörleri geriye uyumluluk için bu adla kalır.
 
 ---
 Coded by Yunus Açıkgöz

@@ -29,9 +29,15 @@ jobs:
       - name: Exe'yi derle
         run: python araclar/derle.py --etiket ${{ github.ref_name }}
 
+      # Geçiş dönemi: v1.4.1 ve öncesi güncellemeyi eski adla arıyor; aynı exe'yi o adla da yükle
+      - name: Eski adla uyumluluk kopyası
+        run: Copy-Item DAGITIM/Makine_Kontrat.exe DAGITIM/KMS_Sozlesme.exe
+
       - name: Release oluştur
         uses: softprops/action-gh-release@v2
         with:
           name: Makine Kontrat ${{ github.ref_name }}
           body_path: build/notlar.md
-          files: DAGITIM/KMS_Sozlesme.exe
+          files: |
+            DAGITIM/Makine_Kontrat.exe
+            DAGITIM/KMS_Sozlesme.exe

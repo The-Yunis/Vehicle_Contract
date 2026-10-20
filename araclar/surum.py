@@ -1,5 +1,7 @@
 """Sürüm bilgisi tek yerde. Yeni sürüm çıkarırken SADECE burayı ve yenilikler.json'u güncelleyin."""
-SURUM = "1.4.1"
+SURUM = "1.5.0"
 REPO = "The-Yunis/Vehicle_Contract"
-# Exe adı eski adla kalır: eski sürümler güncellemeyi bu dosya adıyla arar
-EXE_ADI = "KMS_Sozlesme.exe"
+EXE_ADI = "Makine_Kontrat.exe"
+# v1.4.1 ve öncesi güncellemeyi bu adla arar. Geçiş döneminde her Release'e exe bu adla da
+# yüklenir (iş akışına bakın); herkes v1.5.0+ olunca iş akışından kaldırılabilir.
+ESKI_EXE_ADI = "KMS_Sozlesme.exe"

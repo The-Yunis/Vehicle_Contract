@@ -6,9 +6,11 @@ Repo **public**: buraya kişisel veri (TC, IBAN, e-posta, kiralayan bilgisi) yaz
 ## Proje ne?
 
 Karayolları karla mücadele işinde kiralanan iş makinaları için **kiralama sözleşmesi üreten Windows masaüstü programı**
-(`KMS_Sozlesme.exe`). Eski adı "KMS Sözleşme"; v1.3.0'da "Makine Kontrat" oldu. **Exe adı (`KMS_Sozlesme.exe`, eski
-sürümler güncellemeyi bu adla arar), `%APPDATA%\KMS Sozlesme` ve `Belgeler\KMS Sözleşmeler` klasörleri bilerek eski adla kalır** —
-değiştirmek güncelleme zincirini koparır / kullanıcı kayıtlarını kaybettirir. Kullanıcı (Yunus) ve şirketteki yönetici arkadaşları kullanıyor.
+(`Makine_Kontrat.exe`). Eski adı "KMS Sözleşme"; v1.3.0'da "Makine Kontrat" oldu, v1.5.0'da exe adı `Makine_Kontrat.exe` oldu.
+**Geçiş dönemi:** v1.4.1 ve öncesi güncellemeyi Release'te `KMS_Sozlesme.exe` adlı dosyayı arayarak bulur; bu yüzden iş akışı
+aynı exe'yi iki adla yükler (`surum.py` → `ESKI_EXE_ADI`). Herkes v1.5.0+ olunca uyumluluk kopyası iş akışından kaldırılabilir.
+Kullanıcının diskteki exe adı güncellemede korunur (kısayollar bozulmasın). `%APPDATA%\KMS Sozlesme` ve `Belgeler\KMS Sözleşmeler`
+klasörleri **bilerek eski adla kalır** — değiştirmek kullanıcı kayıtlarını kaybettirir. Kullanıcı (Yunus) ve şirketteki yönetici arkadaşları kullanıyor.
 
 - Şirket **KİRACI** taraf: ÖZTAÇ PETROL A.Ş. – Hİ-KA NAK. LTD. ŞTİ. İş Ortaklığı. Sözleşme maddeleri **Kiracı lehine** düzenlenir.
   Şirkete gelen "düzeltme notları" Kiralayan gözünden yazılmıştı; körü körüne uygulanmadı.
@@ -50,7 +52,7 @@ Kod, tanımlayıcılar ve yorumlar **Türkçe**; aynı üslupla devam et.
 
 - **PyInstaller tek dosya + kendini yeniden başlatma:** Yeni süreç eski sürecin `_PYI*`/`_MEI*` ortam değişkenlerini devralırsa kendini onun alt süreci sanıp silinen geçici klasörü kullanır ve askıda kalır. Çözüm `kms.py`'de: bu değişkenler temizlenir + `PYINSTALLER_RESET_ENVIRONMENT=1`. v1.2.0 bu hatayı taşıyordu; v1.2.1+ düzgün, v1.2.2 ile gerçek GitHub üzerinden doğrulandı.
 - **CI'da Türkçe karakter:** Windows runner konsolu cp1252; `PYTHONUTF8=1` olmadan `print("Hazır")` çöker (workflow'da ayarlı).
-- **Test derlemeleri:** Kullanıcının açık programı genellikle `DAGITIM\KMS_Sozlesme.exe`'dir. Test exe'lerini **her zaman** `python araclar/derle.py --cikti <geçici klasör>` ile derle, `DAGITIM`'e değil.
+- **Test derlemeleri:** Kullanıcının açık programı genellikle `DAGITIM\` içindedir (adını kendisi değiştirebiliyor). Test exe'lerini **her zaman** `python araclar/derle.py --cikti <geçici klasör>` ile derle, `DAGITIM`'e değil.
 - **Sahte güncelleme sunucusuyla test:** `KMS_GUNCELLEME_API` ortam değişkeni sahte `latest.json`'a yönlendirir. Python `http.server` süreçleri farklı adla (`python3.13.exe`) çalışabilir; kapatırken işlem adına değil komut satırına göre bul. Windows aynı porta iki sunucunun bağlanmasına izin verir — eski sunucu kalırsa yanlış dosya sunulur.
 - **Exe çalışırken yeniden adlandırılırsa** `sys.executable` eski adı göstermeye devam eder; v1.4.0'da güncelleme bu yüzden yarıda kaldı. v1.4.1'den beri `guncelleme.py` açılıştaki dosya kimliğinden (st_dev/st_ino) exe'yi aynı klasörde bulur; yarım kalan `.yeni` ve `.eski` dosyaları açılışta temizlenir.
 - **Ayarlar anında kaydedilir** (v1.4.0). Önceden yalnızca "Ayarları kaydet" düğmesiyle kaydediliyordu; kullanıcı logo anahtarını kapatıp düğmeye basmadığı için logolar çıkmaya devam etti. Oluştur penceresinde de logo anahtarı var (`cikti.logo`, Ayarlar'daki varsayılandan önceliklidir).
