@@ -1,4 +1,7 @@
 {
+  "1.4.1": [
+    "Düzeltme: Program açıkken exe dosyasının adı değiştirildiğinde güncelleme yarıda kalıyordu; artık sorunsuz güncelleniyor."
+  ],
   "1.4.0": [
     "Sözleşmeler kurumsal sayfa düzeninde: tek tip yazı, hizalı madde girintileri, kalın madde numaraları, iki yana yaslı metin.",
     "Her sayfanın altında sözleşme no, sayfa numarası ve paraf alanı.",

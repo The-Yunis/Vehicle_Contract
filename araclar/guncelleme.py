@@ -27,18 +27,50 @@ def surum_sayisi(metin):
     return tuple(parcalar + [0] * (3 - len(parcalar)))
 
 
+def _dosya_kimligi(yol):
+    s = os.stat(yol)
+    return s.st_dev, s.st_ino
+
+
+# Açılışta exe'nin dosya kimliği (NTFS dosya numarası) alınır: kullanıcı program açıkken
+# exe'nin adını değiştirse bile sys.executable eski adı göstermeye devam eder; dosyayı
+# bu kimlikle yeniden buluruz.
+_ACILIS_EXE = Path(sys.executable).resolve() if getattr(sys, "frozen", False) else None
+try:
+    _EXE_KIMLIGI = _dosya_kimligi(_ACILIS_EXE) if _ACILIS_EXE else None
+except OSError:
+    _EXE_KIMLIGI = None
+
+
 def exe_yolu():
-    """Çalışan exe (yalnızca derlenmiş sürümde güncelleme yapılır)."""
-    return Path(sys.executable).resolve() if getattr(sys, "frozen", False) else None
+    """Çalışan exe'nin ŞU ANKİ yolu (geliştirme sürümünde None).
+    Exe çalışırken yeniden adlandırıldıysa aynı klasörde dosya kimliğinden bulunur."""
+    if _ACILIS_EXE is None:
+        return None
+    if _ACILIS_EXE.exists():
+        return _ACILIS_EXE
+    if _EXE_KIMLIGI:
+        for aday in _ACILIS_EXE.parent.glob("*.exe"):
+            try:
+                if _dosya_kimligi(aday) == _EXE_KIMLIGI:
+                    return aday.resolve()
+            except OSError:
+                continue
+    raise RuntimeError("Program dosyası çalışırken başka bir klasöre taşınmış veya silinmiş. "
+                       "Programı kapatıp yeni yerinden açın, sonra tekrar güncelleyin.")
 
 
 def eskileri_temizle():
-    exe = exe_yolu()
+    """Önceki güncellemelerden kalan '.eski' / yarım kalmış '.yeni' dosyalarını siler."""
+    try:
+        exe = exe_yolu()
+    except RuntimeError:
+        return
     if not exe:
         return
-    for eski in exe.parent.glob(exe.name + ".eski*"):
+    for artik in [*exe.parent.glob("*.exe.eski*"), *exe.parent.glob("*.exe.yeni")]:
         try:
-            eski.unlink()
+            artik.unlink()
         except OSError:
             pass  # önceki süreç henüz kapanmadıysa bir sonraki açılışta silinir
 
@@ -74,7 +106,7 @@ class Guncelleyici:
         self.varlik = varlik
         self.guncelle_durum(asama="bekliyor", var=var, yeni=yeni.lstrip("vV"), notlar=rel.get("body") or "",
                             boyut=(varlik or {}).get("size", 0), tarih=rel.get("published_at", ""),
-                            gelistirme=exe_yolu() is None)
+                            gelistirme=_ACILIS_EXE is None)
         return self.ozet()
 
     def kur(self):
