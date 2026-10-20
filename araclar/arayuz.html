@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KMS Sözleşme</title>
+<link rel="icon" href="/varlik/simge.png">
+<style>
+:root {
+  --laci: #003a5d; --laci-koyu: #002741; --laci-acik: #e6eef4; --sari: #e8b400; --sari-acik: #fdf5d9;
+  --bg: #f2f4f7; --kart: #ffffff; --yazi: #172131; --soluk: #667085; --cizgi: #e3e8ef; --cizgi2: #cfd6e0;
+  --hata: #c4321c; --hata-acik: #fdeeeb; --uyari: #8a5a00; --uyari-acik: #fff6df; --ok: #1f7a3f; --ok-acik: #e7f5ec;
+  --golge: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+  --golge2: 0 12px 32px rgba(16,24,40,.18);
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--yazi);
+  font: 14px/1.5 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+svg.ik { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round; }
+
+/* ------------------------------------------------ açılış ekranı */
+#acilis { position: fixed; inset: 0; z-index: 50; background: #fff; display: grid; place-items: center;
+  transition: opacity .45s ease, visibility .45s; }
+#acilis.gizle { opacity: 0; visibility: hidden; }
+.acilis-ic { text-align: center; }
+.acilis-logolar { display: flex; align-items: center; gap: 34px; justify-content: center; margin-bottom: 30px; }
+.acilis-logolar img { height: 58px; }
+.acilis-logolar .ayrac { width: 1px; height: 56px; background: var(--cizgi2); }
+.acilis-ic h1 { margin: 0; font-size: 26px; color: var(--laci); letter-spacing: -.01em; }
+.acilis-ic p { margin: 4px 0 0; color: var(--soluk); }
+.acilis-cubuk { width: 220px; height: 3px; background: var(--cizgi); border-radius: 3px; margin: 28px auto 0; overflow: hidden; }
+.acilis-cubuk span { display: block; height: 100%; width: 40%; background: var(--sari); border-radius: 3px;
+  animation: kay 1.1s ease-in-out infinite; }
+@keyframes kay { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
+.acilis-imza { position: absolute; bottom: 26px; left: 0; right: 0; text-align: center; color: var(--soluk); font-size: 12px; letter-spacing: .04em; }
+.acilis-imza b { color: var(--laci); }
+
+/* ------------------------------------------------ iskelet */
+.app { display: grid; grid-template-columns: 248px 1fr; height: 100vh; }
+.yan { background: linear-gradient(180deg, var(--laci) 0%, var(--laci-koyu) 100%); color: #c9d7e3;
+  display: flex; flex-direction: column; padding: 18px 14px; overflow-y: auto; }
+.marka { display: flex; align-items: center; gap: 11px; padding: 4px 8px 20px; border-bottom: 1px solid rgba(255,255,255,.1); margin-bottom: 14px; }
+.marka img { width: 38px; height: 38px; border-radius: 9px; }
+.marka b { display: block; color: #fff; font-size: 15px; letter-spacing: .01em; }
+.marka small { display: block; font-size: 11.5px; color: #9fb3c6; line-height: 1.3; }
+.menu { display: flex; flex-direction: column; gap: 2px; }
+.menu .grup { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #7f98ae; padding: 14px 10px 6px; }
+.menu button { display: flex; align-items: center; gap: 11px; width: 100%; padding: 9px 11px; border: 0;
+  border-radius: 8px; background: transparent; color: #c9d7e3; cursor: pointer; text-align: left; position: relative; }
+.menu button:hover { background: rgba(255,255,255,.07); color: #fff; }
+.menu button.aktif { background: rgba(255,255,255,.12); color: #fff; font-weight: 600; }
+.menu button.aktif::before { content: ""; position: absolute; left: -14px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--sari); }
+.menu .rozet-nokta { margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--sari); }
+.yan-alt { margin-top: auto; padding-top: 16px; }
+.kullanici { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,.06); }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--sari); color: var(--laci-koyu);
+  display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
+.kullanici b { display: block; color: #fff; font-size: 13px; line-height: 1.2; }
+.kullanici small { color: #9fb3c6; font-size: 11.5px; }
+.imza { margin-top: 12px; padding: 0 6px; font-size: 11px; color: #7f98ae; display: flex; justify-content: space-between; align-items: center; }
+.imza button { background: none; border: 0; color: #9fb3c6; cursor: pointer; padding: 0; font-size: 11px; }
+.imza button:hover { color: #fff; }
+.imza b { color: #d6e1ea; font-weight: 600; }
+
+.sutun { display: flex; flex-direction: column; min-width: 0; height: 100vh; }
+.ust { background: #fff; border-bottom: 1px solid var(--cizgi); padding: 14px 28px; display: flex; align-items: center; gap: 20px; }
+.ust h2 { margin: 0; font-size: 19px; letter-spacing: -.01em; }
+.ust p { margin: 1px 0 0; color: var(--soluk); font-size: 13px; }
+.ust-logolar { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+.ust-logolar img { height: 30px; }
+.ust-logolar .ayrac { width: 1px; height: 28px; background: var(--cizgi2); }
+main { flex: 1; overflow-y: auto; padding: 24px 28px 40px; }
+.sayfa { display: none; max-width: 1120px; margin: 0 auto; }
+.sayfa.aktif { display: block; animation: belir .25s ease; }
+@keyframes belir { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ------------------------------------------------ bileşenler */
+.kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 12px; box-shadow: var(--golge); padding: 20px 22px; margin-bottom: 18px; }
+.kart-bas { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.kart-bas h3 { margin: 0; font-size: 15.5px; }
+.kart-bas p { margin: 2px 0 0; color: var(--soluk); font-size: 13px; }
+.kart-bas .sag { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.adim { width: 28px; height: 28px; border-radius: 8px; background: var(--laci-acik); color: var(--laci);
+  display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
+.izgara { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px 18px; }
+.genis { grid-column: 1 / -1; }
+.yari { grid-column: span 2; }
+label.et { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; color: #344054; }
+label.et .z { color: var(--hata); }
+.girdi { width: 100%; padding: 9px 11px; border: 1px solid var(--cizgi2); border-radius: 8px; background: #fff;
+  transition: border-color .15s, box-shadow .15s; }
+.girdi:focus { outline: none; border-color: var(--laci); box-shadow: 0 0 0 3px rgba(0,58,93,.12); }
+.girdi::placeholder { color: #a3acb9; }
+.alan.hatali .girdi { border-color: var(--hata); background: var(--hata-acik); }
+.alan.hatali .girdi:focus { box-shadow: 0 0 0 3px rgba(196,50,28,.14); }
+.alan .mesaj { font-size: 12px; color: var(--hata); margin-top: 4px; }
+.alan .mesaj:empty { display: none; }
+.alan .mesaj.uyari { color: var(--uyari); }
+.alan .ipucu { font-size: 12px; color: var(--soluk); margin-top: 4px; }
+.secim { display: inline-flex; background: var(--bg); border: 1px solid var(--cizgi); border-radius: 9px; padding: 3px; gap: 2px; }
+.secim label { padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 13px; color: var(--soluk); }
+.secim input { display: none; }
+.secim label:has(input:checked) { background: #fff; color: var(--laci); font-weight: 600; box-shadow: var(--golge); }
+
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 15px; border-radius: 8px; border: 1px solid var(--cizgi2);
+  background: #fff; color: #344054; cursor: pointer; font-weight: 600; font-size: 13.5px; white-space: nowrap;
+  transition: background .15s, border-color .15s, box-shadow .15s; }
+.btn:hover { background: #f8fafc; border-color: #b9c2cf; }
+.btn.ana { background: var(--laci); border-color: var(--laci); color: #fff; }
+.btn.ana:hover { background: var(--laci-koyu); }
+.btn.sari { background: var(--sari); border-color: var(--sari); color: var(--laci-koyu); }
+.btn.sari:hover { background: #d6a600; }
+.btn.tehlike { color: var(--hata); }
+.btn.tehlike:hover { background: var(--hata-acik); border-color: #f1b8ad; }
+.btn.kucuk { padding: 5px 10px; font-size: 12.5px; }
+.btn.kucuk svg.ik { width: 15px; height: 15px; }
+.btn.hayalet { border-color: transparent; background: transparent; }
+.btn.hayalet:hover { background: var(--bg); }
+.btn:disabled { opacity: .55; cursor: wait; }
+
+.arac { border: 1px solid var(--cizgi); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fbfcfd; }
+.arac-bas { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.arac-bas b { font-size: 14px; }
+.arac-bas .etiket { font-size: 12px; color: var(--soluk); }
+.arac-bas .btn { margin-left: auto; }
+.ekle-btn { width: 100%; justify-content: center; border-style: dashed; padding: 12px; color: var(--laci); }
+
+.alt-bar { position: sticky; bottom: -40px; margin: 0 -28px -40px; padding: 14px 28px; background: rgba(255,255,255,.96);
+  backdrop-filter: blur(6px); border-top: 1px solid var(--cizgi); display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.ozet { display: flex; gap: 26px; flex: 1; flex-wrap: wrap; }
+.ozet div { font-size: 12px; color: var(--soluk); }
+.ozet b { display: block; font-size: 16px; color: var(--yazi); }
+.ozet .vurgu b { color: var(--laci); font-size: 18px; }
+
+.istatistik { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 18px; }
+.ist { background: #fff; border: 1px solid var(--cizgi); border-radius: 12px; padding: 16px 18px; box-shadow: var(--golge); position: relative; overflow: hidden; }
+.ist small { color: var(--soluk); font-size: 12.5px; display: flex; align-items: center; gap: 7px; }
+.ist small svg { color: var(--laci); }
+.ist b { display: block; font-size: 26px; margin-top: 6px; letter-spacing: -.02em; }
+.ist.vurgu { background: var(--laci); border-color: var(--laci); color: #fff; }
+.ist.vurgu small, .ist.vurgu small svg { color: #b8cadb; }
+.ist.vurgu b { position: relative; z-index: 1; }
+.ist.vurgu::after { content: ""; position: absolute; right: -46px; bottom: -62px; width: 130px; height: 86px; border-top: 14px solid var(--sari); border-radius: 50%; opacity: .9; }
+.hizli { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.hizli button { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--cizgi); border-radius: 10px;
+  background: #fff; cursor: pointer; text-align: left; transition: border-color .15s, box-shadow .15s; }
+.hizli button:hover { border-color: var(--laci); box-shadow: 0 0 0 3px rgba(0,58,93,.08); }
+.hizli .ikon { width: 38px; height: 38px; border-radius: 9px; background: var(--laci-acik); color: var(--laci); display: grid; place-items: center; flex: none; }
+.hizli b { display: block; font-size: 13.5px; }
+.hizli small { color: var(--soluk); font-size: 12px; }
+
+.uyari-kutu { display: flex; gap: 12px; align-items: flex-start; border-radius: 10px; padding: 13px 15px; margin-bottom: 18px; font-size: 13px; }
+.uyari-kutu.sari { background: var(--uyari-acik); border: 1px solid #f3dd9b; color: var(--uyari); }
+.uyari-kutu.kirmizi { background: var(--hata-acik); border: 1px solid #f3c1b7; color: var(--hata); }
+.uyari-kutu.yesil { background: var(--ok-acik); border: 1px solid #b9e1c6; color: var(--ok); }
+.uyari-kutu b { display: block; margin-bottom: 2px; }
+.uyari-kutu ul { margin: 4px 0 0; padding-left: 18px; }
+.uyari-kutu .btn { margin-left: auto; }
+
+.arac-cubugu { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.arama { position: relative; flex: 1; min-width: 220px; max-width: 360px; }
+.arama svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--soluk); }
+.arama .girdi { padding-left: 36px; }
+.tablo-sar { overflow-x: auto; border: 1px solid var(--cizgi); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; background: #fff; }
+th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--soluk);
+  background: #f8fafc; padding: 10px 14px; border-bottom: 1px solid var(--cizgi); white-space: nowrap; }
+td { padding: 11px 14px; border-bottom: 1px solid var(--cizgi); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: #fafbfc; }
+td .islemler { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+td.sayi { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td small { color: var(--soluk); display: block; font-size: 12px; }
+.bos { text-align: center; color: var(--soluk); padding: 40px 14px !important; }
+.rozet { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+.rozet::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.rozet.uretildi { background: var(--ok-acik); color: var(--ok); }
+.rozet.taslak { background: var(--uyari-acik); color: var(--uyari); }
+
+.sablon-durum { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 10px; background: var(--bg); margin-bottom: 16px; }
+.sablon-durum .ikon { width: 44px; height: 44px; border-radius: 10px; background: #fff; display: grid; place-items: center; color: var(--laci); border: 1px solid var(--cizgi); }
+.alan-listesi { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px 18px; font-size: 13px; }
+.alan-listesi code { background: var(--laci-acik); color: var(--laci); padding: 1px 6px; border-radius: 5px; font-size: 12px; }
+.adimlar { margin: 0; padding-left: 20px; color: #344054; }
+.adimlar li { margin-bottom: 6px; }
+
+.cikti-secim { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.cikti-secim label { border: 1.5px solid var(--cizgi); border-radius: 12px; padding: 16px 12px; text-align: center; cursor: pointer;
+  transition: border-color .15s, background .15s; position: relative; }
+.cikti-secim input { position: absolute; opacity: 0; }
+.cikti-secim .dosya-ikon { width: 46px; height: 54px; margin: 0 auto 10px; border-radius: 6px; display: grid; place-items: center;
+  color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .02em; position: relative; }
+.cikti-secim .dosya-ikon::after { content: ""; position: absolute; top: 0; right: 0; border-width: 0 12px 12px 0; border-style: solid;
+  border-color: var(--bg) rgba(0,0,0,.18) rgba(0,0,0,.18) var(--bg); border-radius: 0 6px 0 3px; }
+.cikti-secim b { display: block; font-size: 14px; }
+.cikti-secim small { color: var(--soluk); font-size: 12px; }
+.cikti-secim label:has(input:checked) { border-color: var(--laci); background: var(--laci-acik); }
+.cikti-secim .tik { position: absolute; top: 9px; right: 9px; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--cizgi2); background: #fff; display: grid; place-items: center; }
+.cikti-secim label:has(input:checked) .tik { background: var(--laci); border-color: var(--laci); }
+.cikti-secim .tik svg { width: 12px; height: 12px; stroke: #fff; stroke-width: 3; opacity: 0; }
+.cikti-secim label:has(input:checked) .tik svg { opacity: 1; }
+.dosya-satir { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--cizgi); border-radius: 10px; margin-bottom: 8px; }
+.dosya-satir .tur { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; color: #fff; font-size: 10.5px; font-weight: 800; flex: none; }
+.dosya-satir span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.tur-docx { background: #2b5797; } .tur-pdf { background: #c4321c; } .tur-xlsx { background: #1f7a3f; }
+
+.anahtar { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.anahtar input { display: none; }
+.anahtar .yuva { width: 40px; height: 22px; border-radius: 22px; background: var(--cizgi2); position: relative; transition: background .2s; flex: none; }
+.anahtar .yuva::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.anahtar input:checked + .yuva { background: var(--laci); }
+.anahtar input:checked + .yuva::after { transform: translateX(18px); }
+
+/* ------------------------------------------------ pencere (modal) */
+.perde { position: fixed; inset: 0; background: rgba(16,24,40,.45); z-index: 40; display: none; place-items: center; padding: 20px; }
+.perde.acik { display: grid; animation: soluk .15s ease; }
+@keyframes soluk { from { opacity: 0; } }
+.pencere { background: #fff; border-radius: 14px; box-shadow: var(--golge2); width: min(560px, 100%); max-height: calc(100vh - 40px); overflow-y: auto;
+  animation: buyu .18s ease; }
+.pencere.genis { width: min(820px, 100%); }
+@keyframes buyu { from { transform: scale(.97); opacity: 0; } }
+.pencere-bas { padding: 20px 22px 0; display: flex; gap: 12px; align-items: flex-start; }
+.pencere-bas h3 { margin: 0; font-size: 17px; }
+.pencere-bas p { margin: 3px 0 0; color: var(--soluk); font-size: 13px; }
+.pencere-bas .kapat { margin-left: auto; }
+.pencere-govde { padding: 18px 22px; }
+.pencere-alt { padding: 14px 22px 18px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--cizgi); }
+.dondur { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: don .7s linear infinite; }
+@keyframes don { to { transform: rotate(360deg); } }
+.hakkinda { text-align: center; padding: 10px 0 4px; }
+.hakkinda img.simge { width: 72px; height: 72px; border-radius: 16px; }
+.hakkinda h3 { margin: 12px 0 2px; font-size: 20px; color: var(--laci); }
+.hakkinda .logolar { display: flex; justify-content: center; align-items: center; gap: 22px; margin: 20px 0; }
+.hakkinda .logolar img { height: 34px; }
+.hakkinda .imza-buyuk { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--cizgi); font-size: 13px; color: var(--soluk); }
+.hakkinda .imza-buyuk b { color: var(--laci); font-size: 15px; display: block; margin-top: 2px; }
+
+.bant { display: flex; align-items: center; gap: 14px; background: linear-gradient(90deg, var(--laci) 0%, #0b4f7a 100%); color: #fff;
+  border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; box-shadow: var(--golge); }
+.bant .ikon { width: 38px; height: 38px; border-radius: 10px; background: var(--sari); color: var(--laci-koyu); display: grid; place-items: center; flex: none; }
+.bant b { display: block; font-size: 14px; }
+.bant small { color: #bcd0e0; font-size: 12.5px; }
+.bant .btn { margin-left: auto; }
+.ilerleme { height: 8px; background: var(--cizgi); border-radius: 8px; overflow: hidden; margin: 14px 0 6px; }
+.ilerleme span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--laci), #1d6fa3); border-radius: 8px; transition: width .3s; }
+.ilerleme.belirsiz span { width: 35%; animation: kay 1.1s ease-in-out infinite; }
+.notlar { margin: 0; padding-left: 20px; color: #344054; }
+.notlar li { margin-bottom: 7px; }
+.surum-rozet { display: inline-block; background: var(--sari-acik); color: var(--uyari); border: 1px solid #f3dd9b; font-weight: 700;
+  font-size: 12px; padding: 2px 9px; border-radius: 20px; margin-left: 6px; vertical-align: 2px; }
+.bildirim { position: fixed; bottom: 22px; left: 50%; transform: translate(-50%, 20px); background: var(--yazi); color: #fff;
+  padding: 10px 18px; border-radius: 10px; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 60;
+  display: flex; align-items: center; gap: 8px; font-size: 13.5px; box-shadow: var(--golge2); }
+.bildirim.goster { opacity: 1; transform: translate(-50%, 0); }
+.bildirim svg { color: #7ad69a; }
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .yan { display: none; }
+  .ust-logolar img { height: 22px; }
+  main { padding: 16px 16px 40px; }
+  .alt-bar { margin: 0 -16px -40px; padding: 12px 16px; }
+  .cikti-secim { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- =========================================================== AÇILIŞ -->
+<div id="acilis">
+  <div class="acilis-ic">
+    <div class="acilis-logolar">
+      <img src="/varlik/logo_oztac.png" alt="Öztaç"><span class="ayrac"></span><img src="/varlik/logo_hika.png" alt="HİKA">
+    </div>
+    <h1>Araç Kiralama Sözleşme Sistemi</h1>
+    <p>Karla Mücadele · İş Makinası Kiralama</p>
+    <div class="acilis-cubuk"><span></span></div>
+  </div>
+  <div class="acilis-imza">Coded by <b>Yunus Açıkgöz</b></div>
+</div>
+
+<div class="app">
+  <!-- ========================================================= YAN MENÜ -->
+  <aside class="yan">
+    <div class="marka">
+      <img src="/varlik/simge.png" alt="">
+      <div><b>KMS Sözleşme</b><small>Araç Kiralama<br>Sözleşme Sistemi</small></div>
+    </div>
+    <nav class="menu" id="menu">
+      <button data-sayfa="panel"><svg class="ik"><use href="#i-panel"/></svg>Panel</button>
+      <button data-sayfa="hazirla"><svg class="ik"><use href="#i-kalem"/></svg>Sözleşme Hazırla</button>
+      <div class="grup">Kayıtlar</div>
+      <button data-sayfa="sozlesmeler"><svg class="ik"><use href="#i-belge"/></svg>Sözleşmeler</button>
+      <button data-sayfa="kiralayanlar"><svg class="ik"><use href="#i-kisiler"/></svg>Kiralayanlar</button>
+      <div class="grup">Yönetim</div>
+      <button data-sayfa="sablon"><svg class="ik"><use href="#i-sablon"/></svg>Sözleşme Şablonu</button>
+      <button data-sayfa="ayarlar"><svg class="ik"><use href="#i-ayar"/></svg>Ayarlar<span class="rozet-nokta" id="ayar_nokta" hidden></span></button>
+    </nav>
+    <div class="yan-alt">
+      <div class="kullanici"><div class="avatar" id="avatar">?</div>
+        <div><b id="kul_ad">—</b><small id="kul_kod">Kullanıcı kodu yok</small></div></div>
+      <div class="imza"><span>Coded by <b>Yunus Açıkgöz</b></span><button id="hakkinda_ac">v<span id="surum"></span></button></div>
+    </div>
+  </aside>
+
+  <div class="sutun">
+    <header class="ust">
+      <div><h2 id="baslik">Panel</h2><p id="altbaslik"></p></div>
+      <div class="ust-logolar"><img src="/varlik/logo_oztac.png" alt="Öztaç"><span class="ayrac"></span><img src="/varlik/logo_hika.png" alt="HİKA"></div>
+    </header>
+    <main id="icerik">
+<div id="guncelleme_bandi" style="max-width:1120px;margin:0 auto"></div>
+
+<!-- =========================================================== PANEL -->
+<section class="sayfa" id="panel">
+  <div id="panel_uyari"></div>
+  <div class="istatistik">
+    <div class="ist vurgu"><small><svg class="ik"><use href="#i-para"/></svg>Aylık kira yükü (KDV dahil)</small><b id="ist_tutar">0 TL</b></div>
+    <div class="ist"><small><svg class="ik"><use href="#i-belge"/></svg>Üretilen sözleşme</small><b id="ist_uretilen">0</b></div>
+    <div class="ist"><small><svg class="ik"><use href="#i-kamyon"/></svg>Kiralanan araç</small><b id="ist_arac">0</b></div>
+    <div class="ist"><small><svg class="ik"><use href="#i-saat"/></svg>Bekleyen taslak</small><b id="ist_taslak">0</b></div>
+  </div>
+  <div class="kart">
+    <div class="kart-bas"><div><h3>Hızlı işlemler</h3></div></div>
+    <div class="hizli">
+      <button data-git="yeni"><span class="ikon"><svg class="ik"><use href="#i-arti"/></svg></span><span><b>Yeni sözleşme</b><small>Kiralayan ve araç bilgilerini girin</small></span></button>
+      <button data-git="excel"><span class="ikon"><svg class="ik"><use href="#i-tablo"/></svg></span><span><b>Excel'e aktar</b><small>Tüm sözleşme ve araç listesi</small></span></button>
+      <button data-git="klasor"><span class="ikon"><svg class="ik"><use href="#i-klasor"/></svg></span><span><b>Çıktı klasörü</b><small>Üretilen PDF / Word dosyaları</small></span></button>
+    </div>
+  </div>
+  <div class="kart">
+    <div class="kart-bas"><div><h3>Son sözleşmeler</h3><p>En son üzerinde çalışılan kayıtlar</p></div>
+      <div class="sag"><button class="btn kucuk" data-sayfa-git="sozlesmeler">Tümünü gör</button></div></div>
+    <div class="tablo-sar"><table><thead><tr><th>No</th><th>Kiralayan</th><th>Araç</th><th>Dönem</th><th>Durum</th><th></th></tr></thead>
+      <tbody id="son_govde"></tbody></table></div>
+  </div>
+</section>
+
+<!-- =========================================================== HAZIRLA -->
+<section class="sayfa" id="hazirla">
+  <div id="sonuc"></div>
+  <div class="kart">
+    <div class="kart-bas"><span class="adim">1</span><div><h3>Kiralayan</h3><p>Aracın sahibi. Daha önce çalıştığınız biriyse listeden seçin, bilgileri kendiliğinden dolar.</p></div></div>
+    <div class="izgara" id="kiralayan_form">
+      <div class="alan yari"><label class="et" for="kayitli">Kayıtlı kiralayan</label>
+        <select class="girdi" id="kayitli"></select></div>
+      <div class="alan"><label class="et">Kiralayan türü</label>
+        <div class="secim"><label><input type="radio" name="tur" value="sahis" checked>Şahıs</label><label><input type="radio" name="tur" value="sirket">Şirket</label></div></div>
+      <div class="alan genis"><label class="et"><span data-tur-etiket="ad">Adı Soyadı</span> <span class="z">*</span></label>
+        <input class="girdi" data-k="ad" data-kural="ad" autocomplete="off"><div class="mesaj"></div></div>
+      <div class="alan"><label class="et"><span data-tur-etiket="kimlik">T.C. Kimlik No</span> <span class="z">*</span></label>
+        <input class="girdi" data-k="kimlik" data-kural="kimlik" inputmode="numeric" maxlength="11"><div class="mesaj"></div></div>
+      <div class="alan"><label class="et">Vergi Dairesi</label><input class="girdi" data-k="vd"></div>
+      <div class="alan" data-sirket-alan hidden><label class="et">Şirket yetkilisi (imzalayan)</label>
+        <input class="girdi" data-k="yetkili" placeholder="Ad Soyad - Unvan"></div>
+      <div class="alan genis"><label class="et">Adres <span class="z">*</span></label>
+        <input class="girdi" data-k="adres" data-kural="adres"><div class="mesaj"></div></div>
+      <div class="alan"><label class="et">Telefon</label><input class="girdi" data-k="tel" inputmode="tel" placeholder="05xx xxx xx xx"></div>
+      <div class="alan"><label class="et">E-posta</label><input class="girdi" data-k="eposta" data-kural="eposta" type="email"><div class="mesaj"></div>
+        <div class="ipucu">Sözleşmedeki bildirimler e-posta ile yapılır.</div></div>
+      <div class="alan"><label class="et">Banka / Şube <span class="z">*</span></label>
+        <input class="girdi" data-k="banka" data-kural="banka" placeholder="ör. Ziraat Bankası Batman Şb."><div class="mesaj"></div></div>
+      <div class="alan genis"><label class="et">IBAN <span class="z">*</span></label>
+        <input class="girdi" data-k="iban" data-kural="iban" placeholder="TR00 0000 0000 0000 0000 0000 00" maxlength="32"><div class="mesaj"></div>
+        <div class="ipucu">TR ile başlar, 26 karakterdir. Hesap kiralayanın kendi adına olmalı.</div></div>
+    </div>
+  </div>
+
+  <div class="kart">
+    <div class="kart-bas"><span class="adim">2</span><div><h3>Sözleşme</h3><p>Kira, teslim tutanağındaki tarihte başlar; buradaki tarih en geç teslim tarihidir.</p></div></div>
+    <div class="izgara">
+      <div class="alan"><label class="et">Sözleşme No <span class="z">*</span></label><input class="girdi" id="s_no" data-kural="no"><div class="mesaj"></div></div>
+      <div class="alan"><label class="et">Teslim tarihi <span class="z">*</span></label><input class="girdi" id="s_baslangic" type="date" data-kural="baslangic"><div class="mesaj"></div></div>
+      <div class="alan"><label class="et">Bitiş tarihi <span class="z">*</span></label><input class="girdi" id="s_bitis" type="date" data-kural="bitis"><div class="mesaj"></div></div>
+      <div class="alan"><label class="et">İmza tarihi</label><input class="girdi" id="s_imza" type="date">
+        <div class="ipucu">Boş bırakılırsa imzada elle yazılır.</div></div>
+      <div class="alan genis"><label class="et">Teslim yeri / adresi <span class="z">*</span></label>
+        <input class="girdi" id="s_teslim" data-kural="teslim" placeholder="ör. Batman-Hasankeyf Karayolu Bakım Şefliği"><div class="mesaj"></div></div>
+    </div>
+  </div>
+
+  <div class="kart">
+    <div class="kart-bas"><span class="adim">3</span><div><h3>Araçlar</h3><p>Bu kiralayandan alınan her araç. Her araç için ayrı teslim/iade tutanağı hazırlanır.</p></div></div>
+    <div id="araclar"></div>
+    <button class="btn ekle-btn" id="arac_ekle" type="button"><svg class="ik"><use href="#i-arti"/></svg>Araç ekle</button>
+  </div>
+
+  <div class="alt-bar">
+    <div class="ozet">
+      <div>Araç<b id="t_adet">0</b></div>
+      <div>Aylık (KDV hariç)<b id="t_ara">0,00 TL</b></div>
+      <div>KDV<b id="t_kdv">0,00 TL</b></div>
+      <div class="vurgu">Aylık toplam<b id="t_genel">0,00 TL</b></div>
+    </div>
+    <button class="btn hayalet" id="temizle" type="button">Temizle</button>
+    <button class="btn" id="taslak" type="button"><svg class="ik"><use href="#i-kaydet"/></svg>Taslak kaydet</button>
+    <button class="btn ana" id="olustur" type="button"><svg class="ik"><use href="#i-belge"/></svg>Oluştur</button>
+  </div>
+</section>
+
+<!-- =========================================================== SÖZLEŞMELER -->
+<section class="sayfa" id="sozlesmeler">
+  <div class="arac-cubugu">
+    <div class="arama"><svg class="ik"><use href="#i-ara"/></svg><input class="girdi" id="s_ara" placeholder="No, kiralayan, plaka ara…"></div>
+    <div class="secim" id="s_filtre">
+      <label><input type="radio" name="filtre" value="" checked>Tümü</label>
+      <label><input type="radio" name="filtre" value="uretildi">Üretilen</label>
+      <label><input type="radio" name="filtre" value="taslak">Taslak</label>
+    </div>
+    <span style="flex:1"></span>
+    <button class="btn" data-git="excel"><svg class="ik"><use href="#i-tablo"/></svg>Excel'e aktar</button>
+    <button class="btn ana" data-git="yeni"><svg class="ik"><use href="#i-arti"/></svg>Yeni sözleşme</button>
+  </div>
+  <div class="tablo-sar"><table>
+    <thead><tr><th>No</th><th>Kiralayan</th><th>Araçlar</th><th>Dönem</th><th style="text-align:right">Aylık (KDV dahil)</th><th>Durum</th><th></th></tr></thead>
+    <tbody id="soz_govde"></tbody></table></div>
+</section>
+
+<!-- =========================================================== KİRALAYANLAR -->
+<section class="sayfa" id="kiralayanlar">
+  <div class="arac-cubugu">
+    <div class="arama"><svg class="ik"><use href="#i-ara"/></svg><input class="girdi" id="k_ara" placeholder="Ad, kimlik no, telefon ara…"></div>
+    <span style="flex:1"></span>
+    <button class="btn ana" id="kiralayan_yeni"><svg class="ik"><use href="#i-arti"/></svg>Kiralayan ekle</button>
+  </div>
+  <div class="tablo-sar"><table>
+    <thead><tr><th>Kiralayan</th><th>TCKN / VKN</th><th>İletişim</th><th>Banka / IBAN</th><th>Sözleşme</th><th></th></tr></thead>
+    <tbody id="kir_govde"></tbody></table></div>
+</section>
+
+<!-- =========================================================== ŞABLON -->
+<section class="sayfa" id="sablon">
+  <div class="kart">
+    <div class="kart-bas"><div><h3>Sözleşme metni</h3><p>Bütün sözleşmeler bu şablondan üretilir. Word'de düzenleyip kaydettiğiniz anda sonraki sözleşmeler yeni metinle çıkar.</p></div></div>
+    <div class="sablon-durum"><span class="ikon"><svg class="ik"><use href="#i-sablon"/></svg></span>
+      <div><b id="sablon_durum">Varsayılan şablon</b><div style="color:var(--soluk);font-size:13px" id="sablon_aciklama"></div></div></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn ana" data-sablon="duzenle"><svg class="ik"><use href="#i-kalem"/></svg>Word'de düzenle</button>
+      <button class="btn" data-sablon="kopyala"><svg class="ik"><use href="#i-belge"/></svg>Kopyasını aç (salt okunur)</button>
+      <button class="btn tehlike" data-sablon="varsayilan" id="sablon_sifirla"><svg class="ik"><use href="#i-geri"/></svg>Varsayılana dön</button>
+    </div>
+  </div>
+  <div class="kart">
+    <div class="kart-bas"><div><h3>Düzenlerken dikkat</h3></div></div>
+    <ol class="adimlar">
+      <li>Çift süslü parantez içindeki alanları (<code>{{K_AD}}</code> gibi) <b>silmeyin ve değiştirmeyin</b>; bunlar formdaki bilgilerle doldurulur.</li>
+      <li>Alanın yerini değiştirebilir, etrafındaki metni dilediğiniz gibi yazabilirsiniz.</li>
+      <li>Word'de <b>Kaydet</b> deyip kapatın. Bir sonraki "Oluştur" işleminde yeni metin kullanılır.</li>
+      <li>Bir şey bozulursa <b>Varsayılana dön</b>: eski şablonunuz silinmez, yedek olarak saklanır.</li>
+    </ol>
+  </div>
+  <div class="kart">
+    <div class="kart-bas"><div><h3>Kullanılabilir alanlar</h3><p>Başında <code>?</code> olan alan boşsa bulunduğu satır sözleşmeden kaldırılır.</p></div></div>
+    <div class="alan-listesi" id="alan_listesi"></div>
+  </div>
+</section>
+
+<!-- =========================================================== AYARLAR -->
+<section class="sayfa" id="ayarlar">
+  <div class="kart">
+    <div class="kart-bas"><div><h3>Kullanıcı</h3><p>Kullanıcı kodu sözleşme numaralarının başına eklenir (ör. YA-2026-001); böylece farklı kişilerin numaraları çakışmaz.</p></div></div>
+    <div class="izgara">
+      <div class="alan"><label class="et">Adınız Soyadınız</label><input class="girdi" data-ayar="Kullanıcı Adı"></div>
+      <div class="alan"><label class="et">Kullanıcı kodu</label><input class="girdi" data-ayar="Kullanıcı Kodu" maxlength="5" style="text-transform:uppercase"></div>
+    </div>
+  </div>
+  <div class="kart">
+    <div class="kart-bas"><div><h3>Şirket (Kiracı) bilgileri</h3><p>Bütün sözleşmelerde kiracı olarak yazılır.</p></div></div>
+    <div class="izgara">
+      <div class="alan genis"><label class="et">Ticaret unvanı</label><input class="girdi" data-ayar="Kiracı Unvanı"></div>
+      <div class="alan genis"><label class="et">Adres</label><input class="girdi" data-ayar="Kiracı Adresi"></div>
+      <div class="alan"><label class="et">Vergi dairesi</label><input class="girdi" data-ayar="Kiracı Vergi Dairesi"></div>
+      <div class="alan"><label class="et">VKN</label><input class="girdi" data-ayar="Kiracı VKN"></div>
+      <div class="alan"><label class="et">Telefon</label><input class="girdi" data-ayar="Kiracı Telefon" data-onemli></div>
+      <div class="alan"><label class="et">E-posta</label><input class="girdi" data-ayar="Kiracı E-posta" data-onemli></div>
+      <div class="alan genis"><label class="et">İmza yetkilisi (Ad Soyad / Unvan)</label><input class="girdi" data-ayar="Kiracı İmza Yetkilisi (Ad Soyad / Unvan)" data-onemli></div>
+    </div>
+  </div>
+  <div class="kart">
+    <div class="kart-bas"><div><h3>Sözleşme ve çıktılar</h3></div></div>
+    <div class="izgara">
+      <div class="alan"><label class="et">KDV oranı (%)</label><input class="girdi" data-ayar="KDV Oranı (%)" type="number" min="0" max="100"></div>
+      <div class="alan"><label class="et">Sevk talebinden sonra teslim süresi</label><input class="girdi" data-ayar="Sevk Talebinden Sonra Teslim Süresi"></div>
+      <div class="alan genis"><label class="et">Çıktı klasörü</label>
+        <div style="display:flex;gap:8px"><input class="girdi" data-ayar="Çıktı Klasörü" readonly><button class="btn" id="klasor_sec" type="button">Gözat…</button></div></div>
+      <div class="alan genis"><label class="anahtar"><input type="checkbox" id="logo_ekle"><span class="yuva"></span>
+        <span><b>Sözleşme başlığına şirket logolarını ekle</b><br><small style="color:var(--soluk)">Öztaç ve HİKA logoları her sayfanın üstünde yer alır.</small></span></label></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="btn ana" id="ayar_kaydet"><svg class="ik"><use href="#i-kaydet"/></svg>Ayarları kaydet</button>
+    <button class="btn" data-guncelleme-denetle><svg class="ik"><use href="#i-yenile"/></svg>Güncellemeleri denetle</button>
+    <small style="color:var(--soluk)">Kayıtlarınız: <span id="veri_yolu"></span></small>
+  </div>
+</section>
+
+    </main>
+  </div>
+</div>
+
+<!-- =========================================================== PENCERE -->
+<div class="perde" id="perde"><div class="pencere" id="pencere"></div></div>
+<div class="bildirim" id="bildirim"><svg class="ik"><use href="#i-tik"/></svg><span></span></div>
+
+<template id="arac_sablon">
+  <div class="arac">
+    <div class="arac-bas"><b class="arac-no"></b><span class="etiket"></span>
+      <button class="btn kucuk tehlike" type="button" data-sil><svg class="ik"><use href="#i-cop"/></svg>Kaldır</button></div>
+    <div class="izgara">
+      <div class="alan"><label class="et">Plaka</label><input class="girdi" data-a="plaka" placeholder="ör. 72 ABC 123">
+        <div class="ipucu">Tescilsiz makinada boş bırakın.</div></div>
+      <div class="alan"><label class="et">Cinsi <span class="z">*</span></label><input class="girdi" data-a="cins" data-kural="cins" list="cinsler"><div class="mesaj"></div></div>
+      <div class="alan"><label class="et">Marka <span class="z">*</span></label><input class="girdi" data-a="marka" data-kural="marka"><div class="mesaj"></div></div>
+      <div class="alan"><label class="et">Model <span class="z">*</span></label><input class="girdi" data-a="model" data-kural="model"><div class="mesaj"></div></div>
+      <div class="alan"><label class="et">Model yılı</label><input class="girdi" data-a="yil" data-kural="yil" inputmode="numeric" maxlength="4"><div class="mesaj"></div></div>
+      <div class="alan"><label class="et">Şasi No <span class="z">*</span></label><input class="girdi" data-a="sasi" data-kural="sasi"><div class="mesaj"></div></div>
+      <div class="alan yari"><label class="et">Teknik özellikler</label><input class="girdi" data-a="ozellik" placeholder="ör. 4x4, 420 HP, 3,3 m³ kova"></div>
+      <div class="alan yari"><label class="et">Ataşmanlar</label><input class="girdi" data-a="atasman" placeholder="Virgülle ayırın: Kar bıçağı, Tuz serici"></div>
+      <div class="alan"><label class="et">Aylık kira (KDV hariç) <span class="z">*</span></label>
+        <input class="girdi" data-a="bedel" data-kural="bedel" inputmode="decimal" placeholder="ör. 230.000"><div class="mesaj"></div></div>
+    </div>
+  </div>
+</template>
+<datalist id="cinsler">
+  <option>Kamyon (Kar Küreme)</option><option>Greyder</option><option>Loder</option><option>Kepçe</option>
+  <option>Beko Loder</option><option>Tuz Serici Kamyon</option><option>Çekici</option><option>Kar Freze Makinası</option>
+</datalist>
+
+<!-- =========================================================== SİMGELER -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+  <symbol id="i-kalem" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-belge" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></symbol>
+  <symbol id="i-kisiler" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-sablon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></symbol>
+  <symbol id="i-ayar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="i-arti" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-tablo" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></symbol>
+  <symbol id="i-klasor" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-para" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></symbol>
+  <symbol id="i-kamyon" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
+  <symbol id="i-saat" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-ara" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></symbol>
+  <symbol id="i-kaydet" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
+  <symbol id="i-cop" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+  <symbol id="i-geri" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></symbol>
+  <symbol id="i-tik" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-uyari" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-yenile" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="i-hediye" viewBox="0 0 24 24"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></symbol>
+  <symbol id="i-ac" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></symbol>
+</svg>
+
+<script>
+const $ = (s, k = document) => k.querySelector(s);
+const $$ = (s, k = document) => [...k.querySelectorAll(s)];
+const ik = (ad, cls = "ik") => `<svg class="${cls}"><use href="#i-${ad}"/></svg>`;
+let VERI = { ayarlar: {}, kiralayanlar: [], sozlesmeler: [] };
+let duzenlenen = null;   // formda açık sözleşmenin kayıttaki numarası
+
+// ---------------------------------------------------------------- yardımcılar
+const tl = n => (Number(n) || 0).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
+const tlKisa = n => (Number(n) || 0).toLocaleString("tr-TR", { maximumFractionDigits: 0 }) + " TL";
+function sayi(s) {
+  s = String(s ?? "").replace(/\s|TL|₺/gi, "");
+  if (!s) return 0;
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  else if ((s.match(/\./g) || []).length > 1 || /\.\d{3}$/.test(s)) s = s.replace(/\./g, "");
+  const n = Number(s);
+  return isFinite(n) ? n : NaN;
+}
+const trTarih = iso => iso ? iso.split("-").reverse().join(".") : "—";
+const kac = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const kdvOrani = () => Number(VERI.ayarlar["KDV Oranı (%)"] ?? 20);
+const aylikToplam = s => { const a = (s.araclar || []).reduce((t, x) => t + (Number(x.bedel) || 0), 0); return a + Math.round(a * kdvOrani()) / 100; };
+const basHarf = ad => (ad || "?").trim().split(/\s+/).map(p => p[0]).slice(0, 2).join("").toLocaleUpperCase("tr");
+function bildir(m) {
+  const b = $("#bildirim"); $("span", b).textContent = m; b.classList.add("goster");
+  clearTimeout(bildir.z); bildir.z = setTimeout(() => b.classList.remove("goster"), 2400);
+}
+async function api(yol, govde) {
+  const r = await fetch(yol, govde === undefined ? {} :
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(govde) });
+  return r.json();
+}
+
+// ---------------------------------------------------------------- pencere (modal)
+function pencere(html, { genis = false, kilitli = false } = {}) {
+  const p = $("#pencere");
+  p.className = "pencere" + (genis ? " genis" : "");
+  p.innerHTML = html;
+  $("#perde").classList.add("acik");
+  $("#perde").dataset.kilitli = kilitli ? "1" : "";
+  $$("[data-kapat]", p).forEach(b => b.onclick = pencereKapat);
+  return p;
+}
+function pencereKapat() { $("#perde").classList.remove("acik"); }
+$("#perde").addEventListener("mousedown", e => { if (e.target.id === "perde" && !$("#perde").dataset.kilitli) pencereKapat(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#perde").dataset.kilitli) pencereKapat(); });
+function onayla(baslik, metin, evet = "Evet", tehlike = false) {
+  return new Promise(coz => {
+    const p = pencere(`<div class="pencere-bas"><div><h3>${kac(baslik)}</h3><p>${kac(metin)}</p></div></div>
+      <div class="pencere-alt"><button class="btn" data-h>Vazgeç</button><button class="btn ${tehlike ? "tehlike" : "ana"}" data-e>${kac(evet)}</button></div>`);
+    $("[data-h]", p).onclick = () => { pencereKapat(); coz(false); };
+    $("[data-e]", p).onclick = () => { pencereKapat(); coz(true); };
+  });
+}
+
+// ---------------------------------------------------------------- doğrulama
+function tcknGecerli(s) {
+  if (!/^[1-9]\d{10}$/.test(s)) return false;
+  const d = [...s].map(Number);
+  const tek = d[0] + d[2] + d[4] + d[6] + d[8], cift = d[1] + d[3] + d[5] + d[7];
+  return ((tek * 7 - cift) % 10 + 10) % 10 === d[9] && d.slice(0, 10).reduce((a, b) => a + b) % 10 === d[10];
+}
+const sirketMi = kap => ($("input[name=tur]:checked, input[name=tur_p]:checked", kap) || {}).value === "sirket";
+const KURAL = {
+  ad: (v, kap) => v.trim() ? "" : (sirketMi(kap) ? "Şirket unvanını yazın." : "Ad soyad yazın."),
+  kimlik: (v, kap) => {
+    v = v.replace(/\D/g, "");
+    if (sirketMi(kap)) return v.length === 10 ? "" : `Vergi no 10 haneli olmalı (şu an ${v.length}).`;
+    if (v.length !== 11) return `TC kimlik no 11 haneli olmalı (şu an ${v.length}).`;
+    return tcknGecerli(v) ? "" : "Bu TC kimlik no geçerli değil; rakamları kontrol edin.";
+  },
+  adres: v => v.trim() ? "" : "Adres yazın.",
+  eposta: v => !v.trim() || /^\S+@\S+\.\S+$/.test(v.trim()) ? "" : "E-posta adresi hatalı görünüyor.",
+  banka: v => v.trim() ? "" : "Banka adını yazın.",
+  iban: v => {
+    v = v.replace(/\s/g, "").toUpperCase();
+    if (!v) return "IBAN yazın.";
+    if (!v.startsWith("TR")) return "IBAN 'TR' ile başlamalı. Hesap numarası değil, IBAN girin.";
+    if (!/^TR\d*$/.test(v)) return "TR'den sonra yalnızca rakam olmalı.";
+    return v.length === 26 ? "" : `IBAN 26 karakter olmalı (şu an ${v.length}).`;
+  },
+  no: v => {
+    v = v.trim();
+    if (!v) return "Sözleşme no yazın.";
+    const b = VERI.sozlesmeler.find(s => s.no === v);
+    return b && v !== duzenlenen ? `!Bu numara kayıtlı (${b.kiralayan?.ad || ""}); kaydedince üzerine yazılır.` : "";
+  },
+  baslangic: v => v ? "" : "Teslim tarihini seçin.",
+  bitis: v => {
+    if (!v) return "Bitiş tarihini seçin.";
+    const b = $("#s_baslangic").value;
+    return b && v <= b ? "Bitiş, teslim tarihinden sonra olmalı. Yılı kontrol edin." : "";
+  },
+  teslim: v => v.trim() ? "" : "Teslim yerini yazın.",
+  cins: v => v.trim() ? "" : "Cinsini yazın.",
+  marka: v => v.trim() ? "" : "Markayı yazın.",
+  model: v => v.trim() && v.trim() !== "-" ? "" : "Modeli yazın (ruhsatta yazar).",
+  yil: v => !v || /^(19|20)\d{2}$/.test(v) ? "" : "4 haneli yıl yazın (ör. 2021).",
+  sasi: v => v.trim() ? "" : "Şasi numarasını yazın (ruhsatta yazar).",
+  bedel: v => { const n = sayi(v); return !String(v).trim() ? "Aylık kirayı yazın." : isNaN(n) || n <= 0 ? "Geçerli bir tutar yazın." : ""; },
+};
+function kontrol(input) {
+  const kural = KURAL[input.dataset.kural];
+  if (!kural) return true;
+  const m = kural(input.value, input.closest("[data-kap]") || document);
+  const uyari = m.startsWith("!");
+  const kutu = input.closest(".alan");
+  kutu.classList.toggle("hatali", !!m && !uyari);
+  const mesaj = $(".mesaj", kutu);
+  if (mesaj) { mesaj.textContent = uyari ? m.slice(1) : m; mesaj.classList.toggle("uyari", uyari); }
+  return !m || uyari;
+}
+const hepsiniKontrol = kap => $$("[data-kural]", kap).filter(i => !kontrol(i));
+function ibanBicim(i) { i.value = i.value.replace(/\s/g, "").toUpperCase().replace(/(.{4})/g, "$1 ").trim(); }
+function turAyarla(kap) {
+  const s = sirketMi(kap);
+  $$("[data-tur-etiket=ad]", kap).forEach(e => e.textContent = s ? "Şirket Unvanı" : "Adı Soyadı");
+  $$("[data-tur-etiket=kimlik]", kap).forEach(e => e.textContent = s ? "Vergi No (VKN)" : "T.C. Kimlik No");
+  $$("[data-k=kimlik]", kap).forEach(i => { i.maxLength = s ? 10 : 11; if (i.value) kontrol(i); });
+  $$("[data-sirket-alan]", kap).forEach(e => e.hidden = !s);
+}
+// girdi davranışları (form ve pencerelerde ortak)
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.k === "iban") ibanBicim(t);
+  if (t.dataset.k === "kimlik") t.value = t.value.replace(/\D/g, "");
+  if (t.dataset.a === "bedel") hesapla();
+  if (t.closest(".alan.hatali")) kontrol(t);
+  if (t.id === "s_baslangic" && $("#s_bitis").value) kontrol($("#s_bitis"));
+  if (t.closest("#hazirla")) formDegisti = true;
+});
+document.addEventListener("change", e => { if (e.target.name === "tur") turAyarla(e.target.closest("[data-kap]") || document); });
+document.addEventListener("focusout", e => {
+  const t = e.target;
+  if (t.matches?.("[data-kural]") && t.value) kontrol(t);
+  if (t.dataset?.a === "bedel" && sayi(t.value) > 0) t.value = sayi(t.value).toLocaleString("tr-TR");
+});
+
+// ---------------------------------------------------------------- sözleşme formu
+let formDegisti = false;
+$("#hazirla").dataset.kap = "1";
+function aracEkle(a = {}) {
+  const k = $("#arac_sablon").content.firstElementChild.cloneNode(true);
+  for (const i of $$("[data-a]", k)) i.value = i.dataset.a === "bedel" && a.bedel ? Number(a.bedel).toLocaleString("tr-TR") : (a[i.dataset.a] ?? "");
+  $("[data-sil]", k).onclick = () => { k.remove(); numarala(); hesapla(); };
+  $("[data-a=plaka]", k).addEventListener("input", () => numarala());
+  $("#araclar").append(k);
+  numarala(); hesapla();
+  return k;
+}
+function numarala() {
+  $$("#araclar .arac").forEach((k, i) => {
+    $(".arac-no", k).textContent = `${i + 1}. araç`;
+    $(".etiket", k).textContent = $("[data-a=plaka]", k).value.toUpperCase();
+  });
+}
+function hesapla() {
+  const ara = $$("#araclar [data-a=bedel]").reduce((t, i) => t + (sayi(i.value) || 0), 0);
+  const kdv = Math.round(ara * kdvOrani()) / 100;
+  $("#t_adet").textContent = $$("#araclar .arac").length;
+  $("#t_ara").textContent = tl(ara); $("#t_kdv").textContent = tl(kdv); $("#t_genel").textContent = tl(ara + kdv);
+}
+function kiralayanOku(kap) {
+  const k = { tur: sirketMi(kap) ? "sirket" : "sahis" };
+  $$("[data-k]", kap).forEach(i => k[i.dataset.k] = i.value.trim());
+  k.kimlik = (k.kimlik || "").replace(/\D/g, "");
+  k.iban = (k.iban || "").replace(/\s/g, "").toUpperCase();
+  if (k.tur !== "sirket") k.yetkili = "";
+  return k;
+}
+function kiralayanYaz(kap, k = {}) {
+  $(`input[name=tur][value=${k.tur === "sirket" ? "sirket" : "sahis"}]`, kap).checked = true;
+  turAyarla(kap);
+  $$("[data-k]", kap).forEach(i => { i.value = k[i.dataset.k] ?? ""; if (i.dataset.k === "iban") ibanBicim(i); });
+}
+function formOku() {
+  return {
+    no: $("#s_no").value.trim(), kiralayan: kiralayanOku($("#hazirla")),
+    baslangic: $("#s_baslangic").value, bitis: $("#s_bitis").value, imza: $("#s_imza").value,
+    teslim_yeri: $("#s_teslim").value.trim(),
+    araclar: $$("#araclar .arac").map(kart => {
+      const a = {};
+      $$("[data-a]", kart).forEach(i => a[i.dataset.a] = i.value.trim());
+      a.bedel = sayi(a.bedel) || 0; a.plaka = a.plaka.toUpperCase(); a.sasi = a.sasi.toUpperCase();
+      return a;
+    }),
+  };
+}
+function formDoldur(s = null, kiralayan = null) {
+  duzenlenen = s?.no ?? null;
+  kiralayanYaz($("#hazirla"), s?.kiralayan ?? kiralayan ?? {});
+  $("#s_no").value = s?.no ?? sonrakiNo();
+  $("#s_baslangic").value = s?.baslangic ?? ""; $("#s_bitis").value = s?.bitis ?? "";
+  $("#s_imza").value = s?.imza ?? ""; $("#s_teslim").value = s?.teslim_yeri ?? "";
+  $("#araclar").innerHTML = "";
+  (s?.araclar?.length ? s.araclar : [{}]).forEach(a => aracEkle(a));
+  $("#kayitli").value = "";
+  $$("#hazirla .alan").forEach(a => { a.classList.remove("hatali"); const m = $(".mesaj", a); if (m) m.textContent = ""; });
+  $("#sonuc").innerHTML = "";
+  formDegisti = false;
+  hesapla();
+}
+function sonrakiNo() {
+  const kod = (VERI.ayarlar["Kullanıcı Kodu"] || "").toUpperCase();
+  const on = `${kod ? kod + "-" : ""}${new Date().getFullYear()}-`;
+  const n = VERI.sozlesmeler.filter(s => s.no.startsWith(on)).map(s => parseInt(s.no.slice(on.length))).filter(x => !isNaN(x));
+  return on + String((n.length ? Math.max(...n) : 0) + 1).padStart(3, "0");
+}
+function kayitliDoldur() {
+  $("#kayitli").innerHTML = `<option value="">— Yeni kiralayan —</option>` +
+    VERI.kiralayanlar.map((k, i) => `<option value="${i}">${kac(k.ad)} · ${kac(k.kimlik)}</option>`).join("");
+}
+$("#kayitli").onchange = e => { if (e.target.value !== "") { kiralayanYaz($("#hazirla"), VERI.kiralayanlar[e.target.value]); bildir("Kiralayan bilgileri dolduruldu"); } };
+$("#arac_ekle").onclick = () => $("[data-a=plaka]", aracEkle()).focus();
+$("#temizle").onclick = async () => { if (await onayla("Form temizlensin mi?", "Kaydedilmemiş bilgiler silinir.", "Temizle", true)) formDoldur(); };
+
+function hataGoster(baslik, liste) {
+  $("#sonuc").innerHTML = `<div class="uyari-kutu kirmizi">${ik("uyari")}<div><b>${kac(baslik)}</b>
+    ${liste.length ? `<ul>${liste.map(x => `<li>${kac(x)}</li>`).join("")}</ul>` : ""}</div></div>`;
+  $("#icerik").scrollTo({ top: 0, behavior: "smooth" });
+}
+function formHazirMi() {
+  const h = hepsiniKontrol($("#hazirla"));
+  if (!$$("#araclar .arac").length) { hataGoster("En az bir araç ekleyin.", []); return false; }
+  if (h.length) {
+    hataGoster(`${h.length} alanda düzeltme gerekiyor`, ["Kırmızı işaretli alanlara bakın."]);
+    h[0].scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => h[0].focus(), 300);
+    return false;
+  }
+  $("#sonuc").innerHTML = "";
+  return true;
+}
+
+// ---------------------------------------------------------------- oluşturma
+const DOSYA_TURLERI = [
+  ["docx", "Word", "Düzenlenebilir sözleşme", "#2b5797", "DOC"],
+  ["pdf", "PDF", "İmzaya hazır çıktı", "#c4321c", "PDF"],
+];
+function olusturPenceresi() {
+  if (!formHazirMi()) return;
+  const secili = VERI.ayarlar["Çıktılar"] || { docx: true, pdf: true };
+  const s = formOku();
+  const p = pencere(`<div class="pencere-bas"><div><h3>Çıktı türünü seçin</h3>
+      <p>${kac(s.no)} · ${kac(s.kiralayan.ad)} · ${s.araclar.length} araç · aylık ${tl(aylikToplam(s))}</p></div>
+      <button class="btn hayalet kucuk kapat" data-kapat>${ik("x")}</button></div>
+    <div class="pencere-govde"><div class="cikti-secim">${DOSYA_TURLERI.map(([k, ad, ac, renk, kisa]) => `
+      <label><input type="checkbox" value="${k}" ${secili[k] ? "checked" : ""}><span class="tik">${ik("tik")}</span>
+        <div class="dosya-ikon" style="background:${renk}">${kisa}</div><b>${ad}</b><small>${ac}</small></label>`).join("")}
+    </div><div id="olustur_mesaj" style="margin-top:12px"></div></div>
+    <div class="pencere-alt"><button class="btn" data-kapat>Vazgeç</button>
+      <button class="btn ana" id="olustur_basla">${ik("belge")}Oluştur</button></div>`);
+  $("#olustur_basla", p).onclick = () => olustur(p);
+}
+async function olustur(p) {
+  const cikti = {};
+  $$(".cikti-secim input", p).forEach(i => cikti[i.value] = i.checked);
+  if (!Object.values(cikti).some(Boolean)) {
+    $("#olustur_mesaj").innerHTML = `<div class="uyari-kutu kirmizi">${ik("uyari")}<div>En az bir çıktı türü seçin.</div></div>`; return;
+  }
+  const btn = $("#olustur_basla", p);
+  btn.disabled = true; btn.innerHTML = `<span class="dondur"></span>Hazırlanıyor…`;
+  $$("[data-kapat]", p).forEach(b => b.disabled = true);
+  $("#perde").dataset.kilitli = "1";
+  const soz = formOku();
+  try {
+    api("/api/ayarlar", { "Çıktılar": cikti });
+    const r = await api("/api/uret", { sozlesme: soz, cikti, eski_no: duzenlenen });
+    await veriYukle();
+    $("#perde").dataset.kilitli = "";
+    if (r.ok) {
+      duzenlenen = soz.no; formDegisti = false;
+      sonucPenceresi(r, soz);
+    } else {
+      pencereKapat();
+      hataGoster("Sözleşme oluşturulamadı (taslak olarak kaydedildi)", r.hatalar);
+    }
+  } catch (e) {
+    $("#perde").dataset.kilitli = "";
+    pencereKapat();
+    hataGoster("Bağlantı koptu", ["Programı kapatıp yeniden açın."]);
+  }
+}
+function dosyaSatirlari(dosyalar) {
+  return dosyalar.map(d => { const t = d.split(".").pop();
+    return `<div class="dosya-satir"><span class="tur tur-${t}">${t.toUpperCase()}</span><span title="${kac(d)}">${kac(d)}</span>
+      <button class="btn kucuk" data-dosya="${kac(d)}">${ik("ac")}Aç</button></div>`; }).join("");
+}
+function sonucPenceresi(r, soz) {
+  const p = pencere(`<div class="pencere-bas"><div><h3 style="color:var(--ok)">Sözleşme hazır</h3>
+      <p>${kac(soz.no)} · ${kac(soz.kiralayan.ad)} · aylık KDV dahil ${kac(r.genel)}</p></div>
+      <button class="btn hayalet kucuk kapat" data-kapat>${ik("x")}</button></div>
+    <div class="pencere-govde">${dosyaSatirlari(r.dosyalar)}
+      ${r.uyarilar.length ? `<div class="uyari-kutu sari" style="margin:12px 0 0">${ik("uyari")}<div><b>Kontrol edin</b><ul>${r.uyarilar.map(u => `<li>${kac(u)}</li>`).join("")}</ul></div></div>` : ""}</div>
+    <div class="pencere-alt"><button class="btn" id="klasoru_ac">${ik("klasor")}Klasörü aç</button>
+      <button class="btn" id="yeni_baslat">${ik("arti")}Yeni sözleşme</button><button class="btn ana" data-kapat>Tamam</button></div>`);
+  $$("[data-dosya]", p).forEach(b => b.onclick = () => dosyaAc(b.dataset.dosya));
+  $("#klasoru_ac", p).onclick = () => dosyaAc();
+  $("#yeni_baslat", p).onclick = () => { pencereKapat(); formDoldur(); };
+}
+async function dosyaAc(dosya) {
+  const r = await api("/api/ac", dosya ? { dosya } : { klasor: true });
+  if (!r.ok) bildir(r.hata || "Açılamadı");
+}
+$("#olustur").onclick = olusturPenceresi;
+$("#taslak").onclick = async () => {
+  const s = formOku();
+  if (!s.no) return kontrol($("#s_no"));
+  await api("/api/kaydet", { sozlesme: s, eski_no: duzenlenen });
+  duzenlenen = s.no; formDegisti = false;
+  await veriYukle(); bildir("Taslak kaydedildi");
+};
+
+// ---------------------------------------------------------------- sözleşme listesi
+function sozSatir(s, kisa = false) {
+  const plakalar = (s.araclar || []).map(a => a.plaka || a.cins).filter(Boolean);
+  return `<tr>
+    <td style="white-space:nowrap"><b>${kac(s.no)}</b>${s.uretim ? `<small>${kac(s.uretim)}</small>` : ""}</td>
+    <td>${kac(s.kiralayan?.ad || "—")}<small>${kac(s.teslim_yeri || "")}</small></td>
+    <td>${(s.araclar || []).length}${plakalar.length ? `<small>${kac(plakalar.slice(0, 3).join(", "))}${plakalar.length > 3 ? "…" : ""}</small>` : ""}</td>
+    <td style="white-space:nowrap">${trTarih(s.baslangic)}<small>${trTarih(s.bitis)}</small></td>
+    ${kisa ? "" : `<td class="sayi">${tl(aylikToplam(s))}</td>`}
+    <td><span class="rozet ${s.durum === "uretildi" ? "uretildi" : "taslak"}">${s.durum === "uretildi" ? "Üretildi" : "Taslak"}</span></td>
+    <td><div class="islemler">
+      ${(s.dosyalar || []).map(d => `<button class="btn kucuk" data-dosya="${kac(d)}" title="${kac(d)}">${kac(d.split(".").pop().toUpperCase())}</button>`).join("")}
+      <button class="btn kucuk" data-duzenle="${kac(s.no)}">${ik("kalem")}Düzenle</button>
+      ${kisa ? "" : `<button class="btn kucuk tehlike" data-sil="${kac(s.no)}" title="Sil">${ik("cop")}</button>`}
+    </div></td></tr>`;
+}
+function satirOlaylari(kap) {
+  $$("[data-dosya]", kap).forEach(b => b.onclick = () => dosyaAc(b.dataset.dosya));
+  $$("[data-duzenle]", kap).forEach(b => b.onclick = () => sozlesmeAc(b.dataset.duzenle));
+  $$("[data-sil]", kap).forEach(b => b.onclick = async () => {
+    if (!await onayla("Sözleşme kaydı silinsin mi?", `${b.dataset.sil} silinecek. Üretilmiş Word/PDF dosyaları silinmez.`, "Sil", true)) return;
+    await api("/api/sil", { no: b.dataset.sil }); await veriYukle(); bildir("Silindi");
+  });
+}
+async function sozlesmeAc(no) {
+  if (formDegisti && !await onayla("Formdaki değişiklikler kaybolsun mu?", "Sözleşme Hazırla ekranında kaydedilmemiş bilgiler var.", "Devam et", true)) return;
+  formDoldur(VERI.sozlesmeler.find(s => s.no === no));
+  if (VERI.sozlesmeler.find(s => s.no === no)?.durum !== "uretildi") hepsiniKontrol($("#hazirla"));
+  sayfa("hazirla");
+}
+function sozlesmelerCiz() {
+  const q = $("#s_ara").value.trim().toLocaleLowerCase("tr");
+  const f = $("input[name=filtre]:checked").value;
+  const liste = VERI.sozlesmeler.slice().reverse().filter(s =>
+    (!f || (f === "uretildi") === (s.durum === "uretildi")) &&
+    (!q || [s.no, s.kiralayan?.ad, s.kiralayan?.kimlik, s.teslim_yeri, ...(s.araclar || []).flatMap(a => [a.plaka, a.sasi, a.marka])]
+      .join(" ").toLocaleLowerCase("tr").includes(q)));
+  $("#soz_govde").innerHTML = liste.length ? liste.map(s => sozSatir(s)).join("")
+    : `<tr><td colspan="7" class="bos">${VERI.sozlesmeler.length ? "Aramaya uyan sözleşme yok." : "Henüz sözleşme yok. “Yeni sözleşme” ile başlayın."}</td></tr>`;
+  satirOlaylari($("#soz_govde"));
+}
+$("#s_ara").oninput = sozlesmelerCiz;
+$$("input[name=filtre]").forEach(r => r.onchange = sozlesmelerCiz);
+
+// ---------------------------------------------------------------- kiralayanlar
+function kiralayanlarCiz() {
+  const q = $("#k_ara").value.trim().toLocaleLowerCase("tr");
+  const liste = VERI.kiralayanlar.filter(k => !q || [k.ad, k.kimlik, k.tel, k.adres].join(" ").toLocaleLowerCase("tr").includes(q));
+  $("#kir_govde").innerHTML = liste.length ? liste.map(k => {
+    const n = VERI.sozlesmeler.filter(s => (s.kiralayan?.kimlik || "") === k.kimlik).length;
+    return `<tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar" style="background:var(--laci-acik);color:var(--laci)">${kac(basHarf(k.ad))}</span>
+        <div><b>${kac(k.ad)}</b><small>${k.tur === "sirket" ? "Şirket" : "Şahıs"}${k.yetkili ? " · " + kac(k.yetkili) : ""}</small></div></div></td>
+      <td>${kac(k.kimlik)}</td><td>${kac(k.tel || "—")}<small>${kac(k.eposta || "")}</small></td>
+      <td>${kac(k.banka || "—")}<small>${kac((k.iban || "").replace(/(.{4})/g, "$1 "))}</small></td><td>${n}</td>
+      <td><div class="islemler"><button class="btn kucuk" data-yeni-soz="${kac(k.kimlik)}">${ik("arti")}Sözleşme</button>
+        <button class="btn kucuk" data-kir-duzenle="${kac(k.kimlik)}">${ik("kalem")}Düzenle</button>
+        <button class="btn kucuk tehlike" data-kir-sil="${kac(k.kimlik)}" title="Sil">${ik("cop")}</button></div></td></tr>`;
+  }).join("") : `<tr><td colspan="6" class="bos">${VERI.kiralayanlar.length ? "Aramaya uyan kayıt yok." : "Kiralayanlar, sözleşme üretildiğinde buraya otomatik eklenir."}</td></tr>`;
+  const bul = k => VERI.kiralayanlar.find(x => x.kimlik === k);
+  $$("[data-yeni-soz]").forEach(b => b.onclick = async () => {
+    if (formDegisti && !await onayla("Formdaki değişiklikler kaybolsun mu?", "Kaydedilmemiş bilgiler var.", "Devam et", true)) return;
+    formDoldur(null, bul(b.dataset.yeniSoz)); sayfa("hazirla");
+  });
+  $$("[data-kir-duzenle]").forEach(b => b.onclick = () => kiralayanPenceresi(bul(b.dataset.kirDuzenle)));
+  $$("[data-kir-sil]").forEach(b => b.onclick = async () => {
+    if (!await onayla("Kiralayan silinsin mi?", "Yalnızca kayıtlı kiralayan listesinden kaldırılır; sözleşmeler etkilenmez.", "Sil", true)) return;
+    await api("/api/kiralayan_sil", { kimlik: b.dataset.kirSil }); await veriYukle(); bildir("Silindi");
+  });
+}
+$("#k_ara").oninput = kiralayanlarCiz;
+function kiralayanPenceresi(k = null) {
+  const govde = $("#kiralayan_form").cloneNode(true);
+  govde.removeAttribute("id");
+  govde.querySelector(".alan.yari")?.remove();   // "kayıtlı kiralayan" seçimi pencerede gereksiz
+  const p = pencere(`<div class="pencere-bas"><div><h3>${k ? "Kiralayanı düzenle" : "Yeni kiralayan"}</h3><p>Bilgiler sonraki sözleşmelerde kendiliğinden dolar.</p></div>
+      <button class="btn hayalet kucuk kapat" data-kapat>${ik("x")}</button></div>
+    <div class="pencere-govde" data-kap="1"></div>
+    <div class="pencere-alt"><button class="btn" data-kapat>Vazgeç</button><button class="btn ana" id="kir_kaydet">${ik("kaydet")}Kaydet</button></div>`, { genis: true });
+  const kap = $(".pencere-govde", p);
+  // pencere içindeki radyo grubu ana formla karışmasın
+  $$("input[type=radio]", govde).forEach(r => r.name = "tur_p");
+  kap.append(govde);
+  const sirket = () => $("input[name=tur_p]:checked", kap).value === "sirket";
+  const etiketle = () => {
+    $("[data-tur-etiket=ad]", kap).textContent = sirket() ? "Şirket Unvanı" : "Adı Soyadı";
+    $("[data-tur-etiket=kimlik]", kap).textContent = sirket() ? "Vergi No (VKN)" : "T.C. Kimlik No";
+    $("[data-k=kimlik]", kap).maxLength = sirket() ? 10 : 11;
+    $("[data-sirket-alan]", kap).hidden = !sirket();
+  };
+  $$("input[name=tur_p]", kap).forEach(r => { r.checked = r.value === (k?.tur === "sirket" ? "sirket" : "sahis"); r.onchange = () => { etiketle(); kontrol($("[data-k=kimlik]", kap)); }; });
+  $$("[data-k]", kap).forEach(i => { i.value = k?.[i.dataset.k] ?? ""; if (i.dataset.k === "iban") ibanBicim(i); });
+  $$(".alan", kap).forEach(a => { a.classList.remove("hatali"); const m = $(".mesaj", a); if (m) m.textContent = ""; });
+  etiketle();
+  $("#kir_kaydet", p).onclick = async () => {
+    const hatali = hepsiniKontrol(kap).filter(i => ["ad", "kimlik", "adres", "eposta", "banka", "iban"].includes(i.dataset.kural));
+    if (hatali.length) { hatali[0].focus(); return; }
+    const yeni = { tur: sirket() ? "sirket" : "sahis" };
+    $$("[data-k]", kap).forEach(i => yeni[i.dataset.k] = i.value.trim());
+    yeni.kimlik = yeni.kimlik.replace(/\D/g, ""); yeni.iban = yeni.iban.replace(/\s/g, "").toUpperCase();
+    if (yeni.tur !== "sirket") yeni.yetkili = "";
+    await api("/api/kiralayan_kaydet", { kiralayan: yeni, eski_kimlik: k?.kimlik });
+    pencereKapat(); await veriYukle(); bildir("Kiralayan kaydedildi");
+  };
+}
+$("#kiralayan_yeni").onclick = () => kiralayanPenceresi();
+
+// ---------------------------------------------------------------- şablon
+const ALANLAR = [
+  ["K_AD", "Kiralayan adı / unvanı"], ["K_KIMLIK", "T.C. Kimlik No: … / VKN: …"], ["K_ADRES", "Kiralayan adresi"],
+  ["K_TEL", "Kiralayan telefonu"], ["K_EPOSTA", "Kiralayan e-postası"], ["K_VD", "Kiralayan vergi dairesi"],
+  ["K_VN", "Kiralayan VKN (şirketse)"], ["?K_YETKILI", "Kiralayan şirket yetkilisi"], ["K_BANKA", "Banka / şube"],
+  ["K_IBAN", "IBAN"], ["K_IMZACI", "Kiralayan adına imzalayan"], ["R_UNVAN", "Şirket (kiracı) unvanı"],
+  ["R_ADRES", "Şirket adresi"], ["R_TEL", "Şirket telefonu"], ["R_EPOSTA", "Şirket e-postası"],
+  ["R_VD", "Şirket vergi dairesi"], ["R_VN", "Şirket VKN"], ["?R_YETKILI", "Şirket imza yetkilisi"],
+  ["R_IMZACI", "Şirket adına imzalayan"], ["SOZ_NO", "Sözleşme no"], ["BASLANGIC", "Teslim tarihi"],
+  ["BITIS", "Bitiş tarihi"], ["TESLIM_YERI", "Teslim yeri"], ["IMZA_TARIHI", "İmza tarihi"],
+  ["SEVK_SURESI", "Sevk talebinden sonra teslim süresi"], ["ARA_TOPLAM", "Aylık toplam (KDV hariç)"],
+  ["ARA_TOPLAM_YAZI", "… yazıyla"], ["KDV_ORANI", "KDV oranı"], ["KDV", "KDV tutarı"],
+  ["GENEL_TOPLAM", "Aylık toplam (KDV dahil)"], ["GENEL_TOPLAM_YAZI", "… yazıyla"],
+  ["ARAC_TABLOSU", "Araç tablosu (ayrı paragrafta)"], ["TUTANAKLAR", "Teslim/iade tutanakları (en sonda)"],
+];
+$("#alan_listesi").innerHTML = ALANLAR.map(([a, ac]) => `<div><code>{{${a}}}</code> ${kac(ac)}</div>`).join("");
+$$("[data-sablon]").forEach(b => b.onclick = async () => {
+  const islem = b.dataset.sablon;
+  if (islem === "varsayilan" && !await onayla("Varsayılan şablona dönülsün mü?", "Düzenlediğiniz şablon silinmez, yedek olarak saklanır.", "Varsayılana dön", true)) return;
+  const r = await api("/api/sablon", { islem });
+  if (!r.ok) return bildir(r.hata || "İşlem yapılamadı");
+  await veriYukle();
+  bildir(islem === "duzenle" ? "Şablon Word'de açılıyor…" : islem === "varsayilan" ? "Varsayılan şablona dönüldü" : "Kopya açılıyor…");
+});
+
+// ---------------------------------------------------------------- ayarlar
+function ayarlarDoldur() {
+  $$("[data-ayar]").forEach(i => i.value = VERI.ayarlar[i.dataset.ayar] ?? "");
+  $("#logo_ekle").checked = VERI.ayarlar["Sözleşmeye Logo Ekle"] !== false;
+  $("#veri_yolu").textContent = VERI.veri_klasoru || "";
+}
+function ayarlarOku() {
+  const a = {};
+  $$("[data-ayar]").forEach(i => a[i.dataset.ayar] = i.dataset.ayar.startsWith("KDV") ? (Number(i.value) || 0)
+    : i.dataset.ayar === "Kullanıcı Kodu" ? i.value.trim().toUpperCase().replace(/[^A-ZÇĞİÖŞÜ0-9]/g, "") : i.value.trim());
+  a["Sözleşmeye Logo Ekle"] = $("#logo_ekle").checked;
+  return a;
+}
+$("#ayar_kaydet").onclick = async () => { await api("/api/ayarlar", ayarlarOku()); await veriYukle(); bildir("Ayarlar kaydedildi"); };
+$("#klasor_sec").onclick = async () => {
+  const r = await api("/api/klasor_sec", {});
+  if (r.ok) { $("[data-ayar='Çıktı Klasörü']").value = r.klasor; bildir("Klasör seçildi; kaydetmeyi unutmayın"); }
+};
+
+// ---------------------------------------------------------------- panel
+const eksikSirketBilgisi = () => ["Kiracı Telefon", "Kiracı E-posta", "Kiracı İmza Yetkilisi (Ad Soyad / Unvan)"]
+  .filter(k => !VERI.ayarlar[k] || VERI.ayarlar[k] === "-");
+function panelCiz() {
+  const uretilen = VERI.sozlesmeler.filter(s => s.durum === "uretildi");
+  $("#ist_uretilen").textContent = uretilen.length;
+  $("#ist_taslak").textContent = VERI.sozlesmeler.length - uretilen.length;
+  $("#ist_arac").textContent = uretilen.reduce((t, s) => t + (s.araclar || []).length, 0);
+  $("#ist_tutar").textContent = tlKisa(uretilen.reduce((t, s) => t + aylikToplam(s), 0));
+  const eksik = eksikSirketBilgisi();
+  $("#panel_uyari").innerHTML = eksik.length ? `<div class="uyari-kutu sari">${ik("uyari")}<div><b>Şirket bilgileri eksik</b>
+    ${eksik.map(e => e.replace("Kiracı ", "").replace(" (Ad Soyad / Unvan)", "")).join(", ")} henüz girilmedi; sözleşmelerde boş kalır.</div>
+    <button class="btn kucuk" data-sayfa-git="ayarlar">Tamamla</button></div>` : "";
+  const son = VERI.sozlesmeler.slice().sort((a, b) => (b.uretim || "").localeCompare(a.uretim || "")).slice(0, 5);
+  $("#son_govde").innerHTML = son.length ? son.map(s => sozSatir(s, true)).join("")
+    : `<tr><td colspan="6" class="bos">Henüz sözleşme yok.</td></tr>`;
+  satirOlaylari($("#son_govde"));
+  $$("[data-sayfa-git]").forEach(b => b.onclick = () => sayfa(b.dataset.sayfaGit));
+  $("#ayar_nokta").hidden = !eksik.length;
+}
+$$("[data-git]").forEach(b => b.onclick = async () => {
+  const g = b.dataset.git;
+  if (g === "yeni") {
+    if (formDegisti && !await onayla("Formdaki değişiklikler kaybolsun mu?", "Kaydedilmemiş bilgiler var.", "Devam et", true)) return;
+    formDoldur(); sayfa("hazirla");
+  }
+  if (g === "excel") {
+    if (!VERI.sozlesmeler.length) return bildir("Aktarılacak sözleşme yok");
+    const r = await api("/api/excel_tumu", {}); bildir(r.ok ? "Excel dosyası açılıyor…" : "Excel oluşturulamadı");
+  }
+  if (g === "klasor") dosyaAc();
+});
+
+// ---------------------------------------------------------------- gezinme ve yükleme
+const BASLIKLAR = {
+  panel: ["Panel", "Genel durum ve hızlı işlemler"],
+  hazirla: ["Sözleşme Hazırla", "Kiralayan, sözleşme ve araç bilgilerini girin"],
+  sozlesmeler: ["Sözleşmeler", "Üretilen ve taslak sözleşmeler"],
+  kiralayanlar: ["Kiralayanlar", "Araç sahipleri rehberi"],
+  sablon: ["Sözleşme Şablonu", "Sözleşme metnini düzenleyin"],
+  ayarlar: ["Ayarlar", "Kullanıcı, şirket ve çıktı ayarları"],
+};
+function sayfa(ad) {
+  $$(".sayfa").forEach(s => s.classList.toggle("aktif", s.id === ad));
+  $$("#menu button").forEach(b => b.classList.toggle("aktif", b.dataset.sayfa === ad));
+  [$("#baslik").textContent, $("#altbaslik").textContent] = BASLIKLAR[ad];
+  if (ad === "hazirla" && duzenlenen) $("#altbaslik").textContent = `${duzenlenen} düzenleniyor`;
+  $("#icerik").scrollTop = 0;
+}
+$$("#menu button").forEach(b => b.onclick = () => sayfa(b.dataset.sayfa));
+
+async function veriYukle() {
+  VERI = await api("/api/veri");
+  const a = VERI.ayarlar;
+  $("#surum").textContent = VERI.surum;
+  $("#kul_ad").textContent = a["Kullanıcı Adı"] || "Kullanıcı";
+  $("#kul_kod").textContent = a["Kullanıcı Kodu"] ? `Kod: ${a["Kullanıcı Kodu"]}` : "Kullanıcı kodu yok";
+  $("#avatar").textContent = basHarf(a["Kullanıcı Adı"]);
+  $("#sablon_durum").textContent = VERI.sablon_ozel ? "Düzenlenmiş şablon kullanılıyor" : "Varsayılan şablon kullanılıyor";
+  $("#sablon_aciklama").textContent = VERI.sablon_ozel ? "Word'de yaptığınız değişiklikler sözleşmelere yansıyor." : "Kiracı lehine düzenlenmiş, hukukçu notları işlenmiş metin.";
+  $("#sablon_sifirla").hidden = !VERI.sablon_ozel;
+  kayitliDoldur(); sozlesmelerCiz(); kiralayanlarCiz(); panelCiz(); ayarlarDoldur(); hesapla();
+}
+
+function hakkinda() {
+  pencere(`<div class="pencere-govde"><div class="hakkinda">
+    <img class="simge" src="/varlik/simge.png" alt=""><h3>KMS Sözleşme</h3>
+    <div style="color:var(--soluk)">Araç Kiralama Sözleşme Sistemi · Sürüm ${kac(VERI.surum)}</div>
+    <div class="logolar"><img src="/varlik/logo_oztac.png" alt="Öztaç"><img src="/varlik/logo_hika.png" alt="HİKA"></div>
+    <div style="font-size:13px;color:var(--soluk)">${kac(VERI.ayarlar["Kiracı Unvanı"])}</div>
+    <div class="imza-buyuk">Tasarım ve geliştirme<b>Coded by Yunus Açıkgöz</b></div>
+  </div></div><div class="pencere-alt"><button class="btn" data-guncelleme-denetle>${ik("yenile")}Güncellemeleri denetle</button>
+    <button class="btn" data-yenilikler>${ik("hediye")}Bu sürümde neler var?</button><button class="btn ana" data-kapat>Kapat</button></div>`);
+  baglaGuncellemeDugmeleri();
+}
+$("#hakkinda_ac").onclick = hakkinda;
+
+// ---------------------------------------------------------------- güncelleme
+let GUNCEL = {};
+function notListesi(md) {   // sürüm notu (markdown) -> madde listesi
+  const satirlar = String(md || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean)
+    .filter(s => !/^#/.test(s)).map(s => s.replace(/^[-*•]\s*/, "").replace(/\*\*/g, ""));
+  return satirlar.length ? `<ul class="notlar">${satirlar.map(s => `<li>${kac(s)}</li>`).join("")}</ul>` : "";
+}
+function bantCiz() {
+  $("#guncelleme_bandi").innerHTML = GUNCEL.var ? `<div class="bant"><span class="ikon">${ik("yenile")}</span>
+    <div><b>Yeni sürüm hazır: v${kac(GUNCEL.yeni)}</b><small>Şu an kullandığınız: v${kac(VERI.surum)} · Güncelleme yaklaşık bir dakika sürer.</small></div>
+    <button class="btn sari" id="bant_guncelle">${ik("yenile")}Güncelle</button></div>` : "";
+  $("#bant_guncelle")?.addEventListener("click", guncellemePenceresi);
+}
+async function guncellemeDurumu() {
+  try { GUNCEL = await api("/api/guncelleme"); bantCiz(); } catch (e) {}
+}
+async function guncellemeDenetle() {
+  bildir("Güncellemeler denetleniyor…");
+  GUNCEL = await api("/api/guncelleme/denetle", {});
+  bantCiz();
+  if (GUNCEL.var) guncellemePenceresi();
+  else if (GUNCEL.gelistirme) bildir("Geliştirme sürümü: güncelleme yalnızca exe'de çalışır");
+  else if (GUNCEL.hata) bildir("Güncelleme sunucusuna ulaşılamadı");
+  else bildir(`En güncel sürümü kullanıyorsunuz (v${VERI.surum})`);
+}
+function baglaGuncellemeDugmeleri() {
+  $$("[data-guncelleme-denetle]").forEach(b => b.onclick = guncellemeDenetle);
+  $$("[data-yenilikler]").forEach(b => b.onclick = () => yeniliklerPenceresi(false));
+}
+function guncellemePenceresi() {
+  const mb = GUNCEL.boyut ? ` · ${(GUNCEL.boyut / 1048576).toFixed(1)} MB` : "";
+  const p = pencere(`<div class="pencere-bas"><span class="adim" style="background:var(--sari);color:var(--laci-koyu)">${ik("yenile")}</span>
+      <div><h3>Güncelleme mevcut <span class="surum-rozet">v${kac(GUNCEL.yeni)}</span></h3>
+      <p>Şu anki sürüm v${kac(VERI.surum)}${mb}</p></div>
+      <button class="btn hayalet kucuk kapat" data-kapat>${ik("x")}</button></div>
+    <div class="pencere-govde"><div id="gn_icerik">${notListesi(GUNCEL.notlar) || "<p>Hata düzeltmeleri ve iyileştirmeler.</p>"}
+      <div class="uyari-kutu sari" style="margin:14px 0 0">${ik("uyari")}<div>Güncelleme sırasında program kısa süreliğine yeniden başlar.
+      Formdaki kaydedilmemiş bilgiler için önce <b>Taslak kaydet</b>'e basın. Kayıtlarınız ve sözleşmeleriniz korunur.</div></div></div>
+      <div id="gn_ilerleme" hidden><div id="gn_yazi" style="font-weight:600">İndiriliyor…</div>
+        <div class="ilerleme"><span id="gn_cubuk"></span></div><small style="color:var(--soluk)" id="gn_alt"></small></div></div>
+    <div class="pencere-alt" id="gn_alt_bar"><button class="btn" data-kapat>Daha sonra</button>
+      <button class="btn ana" id="gn_basla">${ik("yenile")}Şimdi güncelle</button></div>`);
+  $("#gn_basla", p).onclick = guncellemeyiBaslat;
+}
+async function guncellemeyiBaslat() {
+  $("#perde").dataset.kilitli = "1";
+  $("#gn_icerik").hidden = true; $("#gn_ilerleme").hidden = false; $("#gn_alt_bar").hidden = true;
+  const eskiSurum = VERI.surum;
+  await api("/api/guncelleme/kur", {});
+  const yaz = (yazi, yuzde, alt = "") => {
+    $("#gn_yazi").textContent = yazi; $("#gn_alt").textContent = alt;
+    $(".ilerleme", $("#pencere")).classList.toggle("belirsiz", yuzde == null);
+    if (yuzde != null) $("#gn_cubuk").style.width = yuzde + "%";
+  };
+  const bekle = ms => new Promise(r => setTimeout(r, ms));
+  for (let i = 0; i < 1200; i++) {          // indirme en çok ~10 dk
+    let d;
+    try { d = await api("/api/guncelleme"); } catch (e) { break; }   // sunucu kapandı: yeniden başlıyor
+    if (d.asama === "indiriliyor") yaz("İndiriliyor…", d.yuzde, `%${d.yuzde || 0}`);
+    else if (d.asama === "kuruluyor") yaz("Doğrulanıyor ve kuruluyor…", null);
+    else if (d.asama === "hazir") break;
+    else if (d.asama === "hata") {
+      $("#perde").dataset.kilitli = "";
+      $("#gn_ilerleme").innerHTML = `<div class="uyari-kutu kirmizi" style="margin:0">${ik("uyari")}<div><b>Güncelleme yapılamadı</b>${kac(d.hata)}</div></div>`;
+      $("#gn_alt_bar").hidden = false; $("#gn_basla").hidden = true; return;
+    }
+    await bekle(500);
+  }
+  yaz("Program yeniden başlatılıyor…", null, "Bu pencere birkaç saniye içinde kendiliğinden yenilenecek.");
+  for (let i = 0; i < 120; i++) {           // yeni sürüm aynı adreste açılınca sayfayı yenile
+    await bekle(1000);
+    try {
+      const k = await (await fetch("/api/kimlik", { cache: "no-store" })).json();
+      if (k.surum && k.surum !== eskiSurum) { formDegisti = false; location.reload(); return; }
+    } catch (e) {}
+  }
+  yaz("Yeniden başlatma uzun sürdü", 100, "Programı kapatıp yeniden açın.");
+  $("#perde").dataset.kilitli = "";
+}
+function yeniliklerPenceresi(ilkGosterim = true) {
+  const maddeler = (VERI.yenilikler || {})[VERI.surum] || [];
+  pencere(`<div class="pencere-govde" style="padding-top:26px"><div style="text-align:center">
+      <span class="adim" style="width:54px;height:54px;border-radius:14px;margin:0 auto;background:var(--sari);color:var(--laci-koyu)">${ik("hediye")}</span>
+      <h3 style="margin:14px 0 2px;font-size:19px">${ilkGosterim ? "Program güncellendi" : "Bu sürümde neler var?"} <span class="surum-rozet">v${kac(VERI.surum)}</span></h3>
+      <p style="margin:0 0 16px;color:var(--soluk)">Bu sürümdeki yenilikler</p></div>
+      ${maddeler.length ? `<ul class="notlar">${maddeler.map(m => `<li>${kac(m)}</li>`).join("")}</ul>` : "<p>İyileştirmeler ve hata düzeltmeleri.</p>"}</div>
+    <div class="pencere-alt"><button class="btn ana" data-kapat>Anladım</button></div>`);
+  if (ilkGosterim) api("/api/ayarlar", { "Son Görülen Sürüm": VERI.surum }).then(() => VERI.ayarlar["Son Görülen Sürüm"] = VERI.surum);
+}
+
+function ilkKurulum() {
+  const p = pencere(`<div class="pencere-bas"><img src="/varlik/simge.png" style="width:42px;height:42px;border-radius:10px" alt="">
+      <div><h3>Hoş geldiniz</h3><p>Başlamadan önce sizi tanıyalım. Bu bilgiler yalnızca bu bilgisayarda saklanır.</p></div></div>
+    <div class="pencere-govde"><div class="izgara">
+      <div class="alan genis"><label class="et">Adınız Soyadınız <span class="z">*</span></label><input class="girdi" id="ilk_ad" autocomplete="off"><div class="mesaj"></div></div>
+      <div class="alan genis"><label class="et">Kullanıcı kodu <span class="z">*</span></label><input class="girdi" id="ilk_kod" maxlength="5" style="text-transform:uppercase"><div class="mesaj"></div>
+        <div class="ipucu">2–5 harf, ör. adınızın baş harfleri. Sözleşme numaraları <b id="ilk_ornek">XX-${new Date().getFullYear()}-001</b> şeklinde başlar; böylece arkadaşlarınızın numaralarıyla çakışmaz.</div></div>
+    </div></div>
+    <div class="pencere-alt"><button class="btn ana" id="ilk_kaydet">Başla</button></div>`, { kilitli: true });
+  const ad = $("#ilk_ad", p), kod = $("#ilk_kod", p);
+  ad.oninput = () => { if (!kod.dataset.elle) kod.value = basHarf(ad.value); ornek(); };
+  kod.oninput = () => { kod.dataset.elle = "1"; ornek(); };
+  const ornek = () => $("#ilk_ornek", p).textContent = `${(kod.value || "XX").toUpperCase()}-${new Date().getFullYear()}-001`;
+  setTimeout(() => ad.focus(), 50);
+  $("#ilk_kaydet", p).onclick = async () => {
+    const k = kod.value.trim().toUpperCase().replace(/[^A-ZÇĞİÖŞÜ0-9]/g, "");
+    ad.closest(".alan").classList.toggle("hatali", !ad.value.trim());
+    $(".mesaj", ad.closest(".alan")).textContent = ad.value.trim() ? "" : "Adınızı yazın.";
+    kod.closest(".alan").classList.toggle("hatali", k.length < 2);
+    $(".mesaj", kod.closest(".alan")).textContent = k.length < 2 ? "En az 2 harf yazın." : "";
+    if (!ad.value.trim() || k.length < 2) return;
+    await api("/api/ayarlar", { "Kullanıcı Adı": ad.value.trim(), "Kullanıcı Kodu": k, "Son Görülen Sürüm": VERI.surum });
+    await veriYukle(); pencereKapat(); formDoldur();
+    bildir(`Hoş geldiniz, ${ad.value.trim().split(" ")[0]}`);
+  };
+}
+
+// pencere açık olduğu sürece programa "buradayım" de
+setInterval(() => api("/api/nabiz", {}).catch(() => {}), 3000);
+api("/api/nabiz", {}).catch(() => {});
+window.addEventListener("beforeunload", e => { if (formDegisti) { e.preventDefault(); e.returnValue = ""; } });
+
+(async () => {
+  const bas = Date.now();
+  await veriYukle();
+  const taslak = VERI.sozlesmeler.filter(s => s.durum !== "uretildi").pop();
+  formDoldur(taslak || null);
+  if (taslak) hepsiniKontrol($("#hazirla"));
+  sayfa(BASLIKLAR[location.hash.slice(1)] ? location.hash.slice(1) : "panel");
+  setTimeout(() => {
+    $("#acilis").classList.add("gizle");
+    if (!VERI.ayarlar["Kullanıcı Kodu"]) ilkKurulum();
+    else if (VERI.ayarlar["Son Görülen Sürüm"] !== VERI.surum) yeniliklerPenceresi(true);
+  }, Math.max(0, 1400 - (Date.now() - bas)));
+  baglaGuncellemeDugmeleri();
+  setTimeout(guncellemeDurumu, 6000);          // sunucu açılışta GitHub'ı denetler
+  setInterval(guncellemeDurumu, 10 * 60 * 1000);
+})();
+</script>
+</body>
+</html>

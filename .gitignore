@@ -1,0 +1,12 @@
+__pycache__/
+build/
+DAGITIM/
+CIKTI/
+*.log
+
+# kişisel / gizli veriler: GitHub'a gitmemeli
+veri/
+ARACLAR.xlsx
+# hukukçu yorumlarını içeren orijinal taslak (SABLON.docx bundan temizlenerek üretildi)
+İŞ MAKİNASI KİRALAMA SÖZLEŞMESİ*.docx
+*.webp

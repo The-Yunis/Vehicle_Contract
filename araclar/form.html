@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Araç Sözleşmeleri</title>
+<style>
+:root {
+  --bg: #f4f6f9; --kart: #fff; --yazi: #1d2433; --soluk: #6b7385; --cizgi: #dde2ea;
+  --ana: #1f4e78; --ana-acik: #e8f0f8; --hata: #c62828; --hata-acik: #fdecec;
+  --uyari: #8a5a00; --uyari-acik: #fff6e0; --ok: #2e7d32; --ok-acik: #e9f6ea;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--yazi);
+  font: 15px/1.45 "Segoe UI", system-ui, sans-serif; }
+header { background: var(--ana); color: #fff; padding: 14px 24px; display: flex;
+  align-items: center; gap: 24px; flex-wrap: wrap; }
+header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+nav { display: flex; gap: 4px; flex-wrap: wrap; }
+nav button { background: transparent; color: #cfe0f0; border: 0; padding: 8px 14px;
+  border-radius: 6px; font: inherit; cursor: pointer; }
+nav button.aktif { background: rgba(255,255,255,.16); color: #fff; }
+main { max-width: 1000px; margin: 0 auto; padding: 20px 16px 120px; }
+.sekme { display: none; } .sekme.aktif { display: block; }
+.kart { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px;
+  padding: 18px 20px; margin-bottom: 16px; }
+.kart h2 { font-size: 16px; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+.kart h2 .no { background: var(--ana); color: #fff; width: 24px; height: 24px; border-radius: 50%;
+  display: inline-grid; place-items: center; font-size: 13px; }
+.kart p.aciklama { margin: 0 0 14px; color: var(--soluk); font-size: 13px; }
+.izgara { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px 16px; }
+.genis { grid-column: 1 / -1; }
+label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+label .zorunlu { color: var(--hata); }
+input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #c4cbd6; border-radius: 6px;
+  font: inherit; background: #fff; color: inherit; }
+input:focus, select:focus { outline: 2px solid #8fb4d9; border-color: var(--ana); }
+.alan.hatali input, .alan.hatali select { border-color: var(--hata); background: var(--hata-acik); }
+.alan .mesaj { font-size: 12px; color: var(--hata); min-height: 0; margin-top: 3px; }
+.alan .ipucu { font-size: 12px; color: var(--soluk); margin-top: 3px; }
+.secim { display: flex; gap: 8px; }
+.secim label { font-weight: 400; display: flex; align-items: center; gap: 6px; border: 1px solid #c4cbd6;
+  border-radius: 6px; padding: 7px 12px; cursor: pointer; margin: 0; }
+.secim input { width: auto; }
+.secim label:has(input:checked) { border-color: var(--ana); background: var(--ana-acik); }
+.arac { border: 1px solid var(--cizgi); border-radius: 8px; padding: 14px; margin-bottom: 12px; background: #fafbfd; }
+.arac-baslik { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 600; }
+button.btn { font: inherit; border-radius: 6px; padding: 9px 16px; cursor: pointer; border: 1px solid var(--ana);
+  background: #fff; color: var(--ana); }
+button.btn.ana { background: var(--ana); color: #fff; }
+button.btn.kucuk { padding: 4px 10px; font-size: 13px; }
+button.btn.sil { border-color: #e0b4b4; color: var(--hata); }
+button.btn:disabled { opacity: .5; cursor: wait; }
+.alt-cubuk { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--cizgi);
+  box-shadow: 0 -2px 10px rgba(0,0,0,.06); }
+.alt-ic { max-width: 1000px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.toplam { display: flex; gap: 18px; flex: 1; flex-wrap: wrap; font-size: 14px; }
+.toplam b { font-size: 16px; }
+.sonuc { border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; }
+.sonuc.hata { background: var(--hata-acik); border: 1px solid #f0b8b8; }
+.sonuc.ok { background: var(--ok-acik); border: 1px solid #b5dcb7; }
+.sonuc.uyari { background: var(--uyari-acik); border: 1px solid #f0d9a0; color: var(--uyari); }
+.sonuc h3 { margin: 0 0 6px; font-size: 15px; }
+.sonuc ul { margin: 4px 0 0; padding-left: 20px; }
+.sonuc .butonlar { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--cizgi); vertical-align: middle; }
+th { font-size: 12px; color: var(--soluk); text-transform: uppercase; letter-spacing: .03em; }
+td .butonlar { display: flex; gap: 6px; flex-wrap: wrap; }
+.rozet { font-size: 12px; padding: 2px 8px; border-radius: 10px; }
+.rozet.taslak { background: var(--uyari-acik); color: var(--uyari); }
+.rozet.uretildi { background: var(--ok-acik); color: var(--ok); }
+.bos { color: var(--soluk); text-align: center; padding: 30px; }
+.bildirim { position: fixed; top: 16px; right: 16px; background: var(--yazi); color: #fff; padding: 10px 16px;
+  border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 9; }
+.bildirim.goster { opacity: 1; }
+@media (max-width: 640px) {
+  header { padding: 12px 16px; gap: 8px; } nav button { padding: 6px 10px; }
+  .tablo-sar { overflow-x: auto; }
+  .toplam { gap: 4px 12px; font-size: 13px; } .toplam b { font-size: 14px; }
+  .alt-ic { gap: 8px; } .alt-ic .btn { padding: 7px 10px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Araç Kiralama Sözleşmeleri</h1>
+  <nav>
+    <button data-sekme="yeni" class="aktif">Sözleşme Hazırla</button>
+    <button data-sekme="liste">Kayıtlı Sözleşmeler</button>
+    <button data-sekme="ayar">Şirket Bilgileri</button>
+  </nav>
+</header>
+
+<main>
+<!-- ============================================================ YENİ -->
+<section id="yeni" class="sekme aktif">
+  <div id="sonuc"></div>
+
+  <div class="kart">
+    <h2><span class="no">1</span>Kiralayan (araç sahibi)</h2>
+    <p class="aciklama">Daha önce sözleşme yaptığınız biriyse listeden seçin; bilgileri kendiliğinden dolar.</p>
+    <div class="izgara">
+      <div class="alan genis">
+        <label for="kayitli">Kayıtlı kiralayanlardan seç</label>
+        <select id="kayitli"><option value="">— Yeni kiralayan —</option></select>
+      </div>
+      <div class="alan genis">
+        <label>Kiralayan türü</label>
+        <div class="secim">
+          <label><input type="radio" name="tur" value="sahis" checked> Şahıs (gerçek kişi)</label>
+          <label><input type="radio" name="tur" value="sirket"> Şirket</label>
+        </div>
+      </div>
+      <div class="alan genis"><label for="k_ad"><span id="ad_etiket">Adı Soyadı</span> <span class="zorunlu">*</span></label>
+        <input id="k_ad" data-k="ad" autocomplete="off"><div class="mesaj"></div></div>
+      <div class="alan"><label for="k_kimlik"><span id="kimlik_etiket">T.C. Kimlik No</span> <span class="zorunlu">*</span></label>
+        <input id="k_kimlik" data-k="kimlik" inputmode="numeric" maxlength="11"><div class="mesaj"></div></div>
+      <div class="alan"><label for="k_vd">Vergi Dairesi</label>
+        <input id="k_vd" data-k="vd"><div class="mesaj"></div></div>
+      <div class="alan" id="yetkili_alan" hidden><label for="k_yetkili">Şirket Yetkilisi (imzalayacak kişi)</label>
+        <input id="k_yetkili" data-k="yetkili" placeholder="Ad Soyad - Unvan"><div class="mesaj"></div></div>
+      <div class="alan genis"><label for="k_adres">Adres <span class="zorunlu">*</span></label>
+        <input id="k_adres" data-k="adres"><div class="mesaj"></div></div>
+      <div class="alan"><label for="k_tel">Telefon</label>
+        <input id="k_tel" data-k="tel" inputmode="tel" placeholder="05xx xxx xx xx"><div class="mesaj"></div></div>
+      <div class="alan"><label for="k_eposta">E-posta</label>
+        <input id="k_eposta" data-k="eposta" type="email"><div class="mesaj"></div>
+        <div class="ipucu">Sözleşmedeki bildirimler e-posta ile yapılır.</div></div>
+      <div class="alan"><label for="k_banka">Banka Adı / Şube <span class="zorunlu">*</span></label>
+        <input id="k_banka" data-k="banka" placeholder="ör. Ziraat Bankası Batman Şb."><div class="mesaj"></div></div>
+      <div class="alan genis"><label for="k_iban">IBAN <span class="zorunlu">*</span></label>
+        <input id="k_iban" data-k="iban" placeholder="TR00 0000 0000 0000 0000 0000 00" maxlength="32"><div class="mesaj"></div>
+        <div class="ipucu">TR ile başlar, 26 karakterdir. Hesap kiralayanın kendi adına olmalı.</div></div>
+    </div>
+  </div>
+
+  <div class="kart">
+    <h2><span class="no">2</span>Sözleşme bilgileri</h2>
+    <p class="aciklama">Kira, teslim tutanağındaki tarihte başlar; buradaki teslim tarihi en geç teslim tarihidir.</p>
+    <div class="izgara">
+      <div class="alan"><label for="s_no">Sözleşme No <span class="zorunlu">*</span></label>
+        <input id="s_no"><div class="mesaj"></div></div>
+      <div class="alan"><label for="s_baslangic">Teslim (başlangıç) tarihi <span class="zorunlu">*</span></label>
+        <input id="s_baslangic" type="date"><div class="mesaj"></div></div>
+      <div class="alan"><label for="s_bitis">Bitiş tarihi <span class="zorunlu">*</span></label>
+        <input id="s_bitis" type="date"><div class="mesaj"></div></div>
+      <div class="alan"><label for="s_imza">İmza tarihi</label>
+        <input id="s_imza" type="date"><div class="mesaj"></div>
+        <div class="ipucu">Boş bırakırsanız imzada elle yazılır.</div></div>
+      <div class="alan genis"><label for="s_teslim">Teslim yeri / adresi <span class="zorunlu">*</span></label>
+        <input id="s_teslim" placeholder="ör. Batman-Hasankeyf Karayolu Bakım Şefliği"><div class="mesaj"></div></div>
+    </div>
+  </div>
+
+  <div class="kart">
+    <h2><span class="no">3</span>Araçlar</h2>
+    <p class="aciklama">Bu kiralayandan alınan her araç için bir kart. Her araca ayrı teslim tutanağı hazırlanır.</p>
+    <div id="araclar"></div>
+    <button class="btn" id="arac_ekle" type="button">+ Araç Ekle</button>
+  </div>
+</section>
+
+<!-- ============================================================ LİSTE -->
+<section id="liste" class="sekme">
+  <div class="kart">
+    <h2>Kayıtlı sözleşmeler</h2>
+    <p class="aciklama">"Düzenle" ile forma geri yükleyip değiştirebilir, yeniden üretebilirsiniz.</p>
+    <div class="tablo-sar"><table>
+      <thead><tr><th>No</th><th>Kiralayan</th><th>Araç</th><th>Dönem</th><th>Durum</th><th></th></tr></thead>
+      <tbody id="liste_govde"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================================================ AYARLAR -->
+<section id="ayar" class="sekme">
+  <div class="kart">
+    <h2>Şirket (Kiracı) bilgileri</h2>
+    <p class="aciklama">Bütün sözleşmelerde kullanılır. Bir kez doldurmanız yeterli.</p>
+    <div class="izgara" id="ayar_alanlar"></div>
+    <div style="margin-top:14px"><button class="btn ana" id="ayar_kaydet" type="button">Kaydet</button></div>
+  </div>
+</section>
+</main>
+
+<div class="alt-cubuk" id="alt_cubuk">
+  <div class="alt-ic">
+    <div class="toplam">
+      <span>Araç: <b id="t_adet">0</b></span>
+      <span>Aylık (KDV hariç): <b id="t_ara">0,00 TL</b></span>
+      <span>KDV: <b id="t_kdv">0,00 TL</b></span>
+      <span>Aylık toplam: <b id="t_genel">0,00 TL</b></span>
+    </div>
+    <button class="btn" id="yeni_form" type="button">Yeni / Temizle</button>
+    <button class="btn" id="taslak" type="button">Taslak Kaydet</button>
+    <button class="btn ana" id="uret" type="button">Sözleşmeyi Üret</button>
+  </div>
+</div>
+<div class="bildirim" id="bildirim"></div>
+
+<template id="arac_sablon">
+  <div class="arac">
+    <div class="arac-baslik"><span class="arac-no"></span>
+      <button class="btn kucuk sil" type="button" data-sil>Kaldır</button></div>
+    <div class="izgara">
+      <div class="alan"><label>Plaka</label><input data-a="plaka" placeholder="ör. 72 ABC 123"><div class="mesaj"></div>
+        <div class="ipucu">Tescilsiz makinada boş bırakın.</div></div>
+      <div class="alan"><label>Cinsi <span class="zorunlu">*</span></label><input data-a="cins" list="cinsler" placeholder="ör. Kamyon (Kar Küreme)"><div class="mesaj"></div></div>
+      <div class="alan"><label>Marka <span class="zorunlu">*</span></label><input data-a="marka"><div class="mesaj"></div></div>
+      <div class="alan"><label>Model <span class="zorunlu">*</span></label><input data-a="model"><div class="mesaj"></div></div>
+      <div class="alan"><label>Model Yılı</label><input data-a="yil" inputmode="numeric" maxlength="4"><div class="mesaj"></div></div>
+      <div class="alan"><label>Şasi No <span class="zorunlu">*</span></label><input data-a="sasi"><div class="mesaj"></div></div>
+      <div class="alan genis"><label>Teknik özellikler</label><input data-a="ozellik" placeholder="ör. 4x4, 420 HP, 3,3 m³ kova"><div class="mesaj"></div></div>
+      <div class="alan genis"><label>Ataşmanlar</label><input data-a="atasman" placeholder="ör. Kar bıçağı, Tuz serici (virgülle ayırın)"><div class="mesaj"></div></div>
+      <div class="alan"><label>Aylık kira (KDV hariç, TL) <span class="zorunlu">*</span></label>
+        <input data-a="bedel" inputmode="decimal" placeholder="ör. 230.000"><div class="mesaj"></div></div>
+    </div>
+  </div>
+</template>
+<datalist id="cinsler">
+  <option>Kamyon (Kar Küreme)</option><option>Greyder</option><option>Loder</option>
+  <option>Kepçe</option><option>Beko Loder</option><option>Tuz Serici Kamyon</option><option>Çekici</option>
+</datalist>
+
+<script>
+const $ = (s, k = document) => k.querySelector(s);
+const $$ = (s, k = document) => [...k.querySelectorAll(s)];
+let VERI = { ayarlar: {}, kiralayanlar: [], sozlesmeler: [] };
+
+// ---------------------------------------------------------------- biçim yardımcıları
+const tl = n => n.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
+function sayi(s) {   // "230.000,50" | "230000.5" | "230 000" -> 230000.5
+  s = String(s ?? "").replace(/\s|TL/gi, "");
+  if (!s) return 0;
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  else if ((s.match(/\./g) || []).length > 1 || /\.\d{3}$/.test(s)) s = s.replace(/\./g, "");
+  const n = Number(s);
+  return isFinite(n) ? n : NaN;
+}
+const trTarih = iso => iso ? iso.split("-").reverse().join(".") : "";
+function bildir(m) { const b = $("#bildirim"); b.textContent = m; b.classList.add("goster");
+  clearTimeout(bildir.z); bildir.z = setTimeout(() => b.classList.remove("goster"), 2200); }
+const kac = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+async function api(yol, govde) {
+  const r = await fetch(yol, govde === undefined ? {} :
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(govde) });
+  return r.json();
+}
+
+// ---------------------------------------------------------------- doğrulama
+function tcknGecerli(s) {
+  if (!/^[1-9]\d{10}$/.test(s)) return false;
+  const d = [...s].map(Number);
+  const tek = d[0] + d[2] + d[4] + d[6] + d[8], cift = d[1] + d[3] + d[5] + d[7];
+  return ((tek * 7 - cift) % 10 + 10) % 10 === d[9] && d.slice(0, 10).reduce((a, b) => a + b) % 10 === d[10];
+}
+const turSirket = () => $("input[name=tur]:checked").value === "sirket";
+
+const KURALLAR = {
+  k_ad: v => v.trim() ? "" : (turSirket() ? "Şirket unvanını yazın." : "Ad soyad yazın."),
+  k_kimlik: v => {
+    v = v.replace(/\D/g, "");
+    if (turSirket()) return v.length === 10 ? "" : `Vergi no 10 haneli olmalı (şu an ${v.length} hane).`;
+    if (v.length !== 11) return `TC kimlik no 11 haneli olmalı (şu an ${v.length} hane).`;
+    return tcknGecerli(v) ? "" : "Bu TC kimlik no geçerli değil, rakamları kontrol edin.";
+  },
+  k_adres: v => v.trim() ? "" : "Adres yazın.",
+  k_eposta: v => !v.trim() || /^\S+@\S+\.\S+$/.test(v.trim()) ? "" : "E-posta adresi hatalı görünüyor.",
+  k_banka: v => v.trim() ? "" : "Banka adını yazın.",
+  k_iban: v => {
+    v = v.replace(/\s/g, "").toUpperCase();
+    if (!v) return "IBAN yazın.";
+    if (!v.startsWith("TR")) return "IBAN 'TR' ile başlamalı. Hesap numarası değil, IBAN girin.";
+    if (!/^TR\d*$/.test(v)) return "TR'den sonra sadece rakam olmalı.";
+    return v.length === 26 ? "" : `IBAN 26 karakter olmalı (şu an ${v.length}).`;
+  },
+  s_no: v => {
+    if (!v.trim()) return "Sözleşme no yazın.";
+    const baska = VERI.sozlesmeler.find(s => s.no === v.trim());
+    return baska && v.trim() !== duzenlenen ? `Bu numara zaten kayıtlı (${baska.kiralayan?.ad || ""}). Üzerine yazılacak.` : "";
+  },
+  s_baslangic: v => v ? "" : "Teslim tarihini seçin.",
+  s_bitis: v => {
+    if (!v) return "Bitiş tarihini seçin.";
+    const b = $("#s_baslangic").value;
+    return b && v <= b ? "Bitiş tarihi, teslim tarihinden sonra olmalı. Yılı kontrol edin." : "";
+  },
+  s_teslim: v => v.trim() ? "" : "Teslim yerini yazın.",
+};
+const ARAC_KURAL = {
+  cins: v => v.trim() ? "" : "Cinsini yazın.",
+  marka: v => v.trim() ? "" : "Markayı yazın.",
+  model: v => v.trim() ? "" : "Modeli yazın.",
+  yil: v => !v || /^(19|20)\d{2}$/.test(v) ? "" : "4 haneli yıl yazın (ör. 2021).",
+  sasi: v => v.trim() ? "" : "Şasi numarasını yazın (ruhsatta yazar).",
+  bedel: v => { const n = sayi(v); return !v ? "Aylık kirayı yazın." : isNaN(n) || n <= 0 ? "Geçerli bir tutar yazın." : ""; },
+};
+
+function alanGoster(input, mesaj, uyariMi = false) {
+  const kutu = input.closest(".alan");
+  kutu.classList.toggle("hatali", !!mesaj && !uyariMi);
+  $(".mesaj", kutu).textContent = mesaj;
+  $(".mesaj", kutu).style.color = uyariMi ? "var(--uyari)" : "";
+}
+function kontrolEt(input) {
+  const kural = KURALLAR[input.id] || ARAC_KURAL[input.dataset.a];
+  if (!kural) return true;
+  const m = kural(input.value);
+  const uyariMi = input.id === "s_no" && m.includes("Üzerine");
+  alanGoster(input, m, uyariMi);
+  return !m || uyariMi;
+}
+function hepsiniKontrolEt() {
+  const hatalilar = [...Object.keys(KURALLAR).map(id => $("#" + id)), ...$$("#araclar [data-a]")]
+    .filter(i => !kontrolEt(i));
+  if (!$$("#araclar .arac").length) hatalilar.push($("#arac_ekle"));
+  return hatalilar;
+}
+
+// ---------------------------------------------------------------- araçlar
+function aracEkle(a = {}) {
+  const k = $("#arac_sablon").content.firstElementChild.cloneNode(true);
+  for (const i of $$("[data-a]", k)) {
+    i.value = a[i.dataset.a] ?? "";
+    if (i.dataset.a === "bedel" && a.bedel) i.value = Number(a.bedel).toLocaleString("tr-TR");
+  }
+  $("[data-sil]", k).onclick = () => { k.remove(); numarala(); hesapla(); };
+  $("#araclar").append(k);
+  numarala(); hesapla();
+  return k;
+}
+function numarala() { $$("#araclar .arac").forEach((k, i) => $(".arac-no", k).textContent = `${i + 1}. araç`); }
+function hesapla() {
+  const kdvOran = Number(VERI.ayarlar["KDV Oranı (%)"] ?? 20);
+  const ara = $$("#araclar [data-a=bedel]").reduce((t, i) => t + (sayi(i.value) || 0), 0);
+  const kdv = Math.round(ara * kdvOran) / 100;
+  $("#t_adet").textContent = $$("#araclar .arac").length;
+  $("#t_ara").textContent = tl(ara); $("#t_kdv").textContent = tl(kdv); $("#t_genel").textContent = tl(ara + kdv);
+}
+
+// ---------------------------------------------------------------- form <-> veri
+let duzenlenen = null;
+function formOku() {
+  const k = { tur: $("input[name=tur]:checked").value };
+  for (const i of $$("[data-k]")) k[i.dataset.k] = i.value.trim();
+  k.kimlik = k.kimlik.replace(/\D/g, "");
+  k.iban = k.iban.replace(/\s/g, "").toUpperCase();
+  if (k.tur !== "sirket") k.yetkili = "";
+  return {
+    no: $("#s_no").value.trim(), kiralayan: k,
+    baslangic: $("#s_baslangic").value, bitis: $("#s_bitis").value, imza: $("#s_imza").value,
+    teslim_yeri: $("#s_teslim").value.trim(),
+    araclar: $$("#araclar .arac").map(kart => {
+      const a = {};
+      for (const i of $$("[data-a]", kart)) a[i.dataset.a] = i.value.trim();
+      a.bedel = sayi(a.bedel) || 0;
+      a.plaka = a.plaka.toUpperCase(); a.sasi = a.sasi.toUpperCase();
+      return a;
+    }),
+  };
+}
+function kiralayanDoldur(k = {}) {
+  $(`input[name=tur][value=${k.tur === "sirket" ? "sirket" : "sahis"}]`).checked = true;
+  turDegisti();
+  for (const i of $$("[data-k]")) i.value = k[i.dataset.k] ?? "";
+  ibanBicimle();
+}
+function formDoldur(s) {
+  duzenlenen = s?.no ?? null;
+  kiralayanDoldur(s?.kiralayan);
+  $("#s_no").value = s?.no ?? sonrakiNo();
+  $("#s_baslangic").value = s?.baslangic ?? ""; $("#s_bitis").value = s?.bitis ?? "";
+  $("#s_imza").value = s?.imza ?? ""; $("#s_teslim").value = s?.teslim_yeri ?? "";
+  $("#araclar").innerHTML = "";
+  (s?.araclar?.length ? s.araclar : [{}]).forEach(a => aracEkle(a));
+  $("#kayitli").value = "";
+  $$(".alan").forEach(a => { a.classList.remove("hatali"); $(".mesaj", a) && ($(".mesaj", a).textContent = ""); });
+  $("#sonuc").innerHTML = "";
+  hesapla();
+}
+function sonrakiNo() {
+  const yil = new Date().getFullYear();
+  const n = VERI.sozlesmeler.map(s => (s.no.match(new RegExp(`^${yil}-(\\d+)$`)) || [])[1]).filter(Boolean).map(Number);
+  return `${yil}-${String((n.length ? Math.max(...n) : 0) + 1).padStart(3, "0")}`;
+}
+function turDegisti() {
+  const sirket = turSirket();
+  $("#ad_etiket").textContent = sirket ? "Şirket Unvanı" : "Adı Soyadı";
+  $("#kimlik_etiket").textContent = sirket ? "Vergi No (VKN)" : "T.C. Kimlik No";
+  $("#k_kimlik").maxLength = sirket ? 10 : 11;
+  $("#yetkili_alan").hidden = !sirket;
+  if ($("#k_kimlik").value) kontrolEt($("#k_kimlik"));
+}
+function ibanBicimle() {
+  const i = $("#k_iban");
+  const v = i.value.replace(/\s/g, "").toUpperCase();
+  i.value = v.replace(/(.{4})/g, "$1 ").trim();
+}
+
+// ---------------------------------------------------------------- sonuç kutusu
+function sonucGoster(tur, baslik, liste = [], butonlar = "") {
+  $("#sonuc").innerHTML = `<div class="sonuc ${tur}"><h3>${kac(baslik)}</h3>` +
+    (liste.length ? `<ul>${liste.map(x => `<li>${kac(x)}</li>`).join("")}</ul>` : "") +
+    (butonlar ? `<div class="butonlar">${butonlar}</div>` : "") + "</div>";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+async function dosyaAc(dosya) {
+  const r = await api("/api/ac", dosya ? { dosya } : { klasor: true });
+  if (!r.ok) bildir(r.hata || "Açılamadı");
+}
+
+// ---------------------------------------------------------------- işlemler
+async function uret() {
+  const hatalilar = hepsiniKontrolEt();
+  if (hatalilar.length) {
+    const ilk = hatalilar[0];
+    sonucGoster("hata", `${hatalilar.length} alanda düzeltme gerekiyor`,
+      ilk.id === "arac_ekle" ? ["En az bir araç ekleyin."] : ["Kırmızı işaretli alanlara bakın."]);
+    ilk.scrollIntoView({ behavior: "smooth", block: "center" }); ilk.focus?.();
+    return;
+  }
+  const btn = $("#uret"); btn.disabled = true; btn.textContent = "Hazırlanıyor…";
+  try {
+    const soz = formOku();
+    const r = await api("/api/uret", soz);
+    await veriYukle();
+    if (r.ok) {
+      duzenlenen = soz.no;
+      const pdf = r.dosya.replace(/\.docx$/, ".pdf");
+      sonucGoster("ok", `Sözleşme hazır: ${r.dosya} (aylık KDV dahil ${r.genel})`, r.uyarilar.map(u => "Uyarı: " + u),
+        `<button class="btn ana" onclick="dosyaAc('${kac(pdf)}')">PDF'i Aç</button>
+         <button class="btn" onclick="dosyaAc('${kac(r.dosya)}')">Word'ü Aç</button>
+         <button class="btn" onclick="dosyaAc()">Klasörü Aç</button>
+         <button class="btn" onclick="formDoldur()">Yeni Sözleşme</button>`);
+    } else {
+      sonucGoster("hata", "Sözleşme üretilemedi (taslak olarak kaydedildi)", r.hatalar);
+    }
+  } catch (e) {
+    sonucGoster("hata", "Program penceresi kapanmış olabilir", ["SOZLESME_FORMU.bat dosyasını yeniden açın."]);
+  } finally { btn.disabled = false; btn.textContent = "Sözleşmeyi Üret"; }
+}
+async function taslak() {
+  const soz = formOku();
+  if (!soz.no) { kontrolEt($("#s_no")); return bildir("Önce sözleşme no yazın"); }
+  await api("/api/kaydet", { ...soz, durum: "taslak" });
+  duzenlenen = soz.no;
+  await veriYukle(); bildir("Taslak kaydedildi");
+}
+async function sil(no) {
+  if (!confirm(`${no} numaralı sözleşme kaydı silinsin mi? (Üretilmiş Word/PDF dosyaları silinmez.)`)) return;
+  await api("/api/sil", { no }); await veriYukle(); bildir("Silindi");
+}
+
+// ---------------------------------------------------------------- liste ve ayarlar
+function listeCiz() {
+  const g = $("#liste_govde");
+  if (!VERI.sozlesmeler.length) { g.innerHTML = `<tr><td colspan="6" class="bos">Henüz kayıt yok.</td></tr>`; return; }
+  g.innerHTML = VERI.sozlesmeler.slice().reverse().map(s => `<tr>
+    <td>${kac(s.no)}</td><td>${kac(s.kiralayan?.ad)}</td><td>${s.araclar?.length || 0}</td>
+    <td>${trTarih(s.baslangic)} – ${trTarih(s.bitis)}</td>
+    <td><span class="rozet ${s.durum === "uretildi" ? "uretildi" : "taslak"}">${s.durum === "uretildi" ? "Üretildi " + kac(s.uretim || "") : "Taslak"}</span></td>
+    <td><div class="butonlar">
+      <button class="btn kucuk" data-duzenle="${kac(s.no)}">Düzenle</button>
+      ${s.dosya ? `<button class="btn kucuk" data-pdf="${kac(s.dosya.replace(/\.docx$/, ".pdf"))}">PDF</button>` : ""}
+      <button class="btn kucuk sil" data-silno="${kac(s.no)}">Sil</button></div></td></tr>`).join("");
+  $$("[data-duzenle]", g).forEach(b => b.onclick = () => {
+    formDoldur(VERI.sozlesmeler.find(s => s.no === b.dataset.duzenle)); sekme("yeni"); });
+  $$("[data-pdf]", g).forEach(b => b.onclick = () => dosyaAc(b.dataset.pdf));
+  $$("[data-silno]", g).forEach(b => b.onclick = () => sil(b.dataset.silno));
+}
+function kayitliCiz() {
+  $("#kayitli").innerHTML = `<option value="">— Yeni kiralayan —</option>` +
+    VERI.kiralayanlar.map((k, i) => `<option value="${i}">${kac(k.ad)} (${kac(k.kimlik)})</option>`).join("");
+}
+function ayarCiz() {
+  $("#ayar_alanlar").innerHTML = Object.entries(VERI.ayarlar).map(([k, v], i) =>
+    `<div class="alan ${/Unvan|Adres/.test(k) ? "genis" : ""}"><label for="ay${i}">${kac(k)}</label>
+     <input id="ay${i}" data-ayar="${kac(k)}" value="${kac(v === "-" ? "" : v)}"></div>`).join("");
+}
+async function veriYukle() {
+  VERI = await api("/api/veri");
+  listeCiz(); kayitliCiz(); ayarCiz(); hesapla();
+  const eksik = ["Kiracı Telefon", "Kiracı E-posta", "Kiracı İmza Yetkilisi (Ad Soyad / Unvan)"]
+    .filter(k => !VERI.ayarlar[k] || VERI.ayarlar[k] === "-");
+  $("nav [data-sekme=ayar]").textContent = "Şirket Bilgileri" + (eksik.length ? " ⚠" : "");
+}
+function sekme(ad) {
+  $$("nav button").forEach(b => b.classList.toggle("aktif", b.dataset.sekme === ad));
+  $$(".sekme").forEach(s => s.classList.toggle("aktif", s.id === ad));
+  $("#alt_cubuk").hidden = ad !== "yeni";
+}
+
+// ---------------------------------------------------------------- olaylar
+$$("nav button").forEach(b => b.onclick = () => sekme(b.dataset.sekme));
+$$("input[name=tur]").forEach(r => r.onchange = turDegisti);
+$("#kayitli").onchange = e => { if (e.target.value !== "") kiralayanDoldur(VERI.kiralayanlar[e.target.value]); };
+$("#k_iban").addEventListener("input", ibanBicimle);
+$("#k_kimlik").addEventListener("input", e => e.target.value = e.target.value.replace(/\D/g, ""));
+document.addEventListener("input", e => {
+  if (e.target.matches("[data-a=bedel]")) hesapla();
+  if (e.target.closest(".alan.hatali")) kontrolEt(e.target);       // düzelttikçe kırmızı kalksın
+  if (e.target.id === "s_baslangic" && $("#s_bitis").value) kontrolEt($("#s_bitis"));
+});
+document.addEventListener("focusout", e => { if (e.target.matches("input") && e.target.value) kontrolEt(e.target); });
+document.addEventListener("focusout", e => {
+  if (e.target.matches("[data-a=bedel]") && sayi(e.target.value) > 0)
+    e.target.value = sayi(e.target.value).toLocaleString("tr-TR");
+});
+$("#arac_ekle").onclick = () => $("[data-a=plaka]", aracEkle()).focus();
+$("#uret").onclick = uret;
+$("#taslak").onclick = taslak;
+$("#yeni_form").onclick = () => { if (confirm("Form temizlensin mi? (Kaydedilmemiş bilgiler silinir)")) formDoldur(); };
+$("#ayar_kaydet").onclick = async () => {
+  const a = {};
+  $$("[data-ayar]").forEach(i => a[i.dataset.ayar] = i.dataset.ayar.startsWith("KDV") ? Number(i.value) || 20 : i.value.trim());
+  await api("/api/ayarlar", a); await veriYukle(); bildir("Şirket bilgileri kaydedildi");
+};
+
+veriYukle().then(() => {
+  const taslaklar = VERI.sozlesmeler.filter(s => s.durum !== "uretildi");
+  formDoldur(taslaklar.length ? taslaklar[taslaklar.length - 1] : null);
+  if (taslaklar.length) { hepsiniKontrolEt(); bildir("Son taslak yüklendi"); }
+});
+</script>
+</body>
+</html>

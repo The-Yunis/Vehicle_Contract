@@ -1,0 +1,7 @@
+@echo off
+chcp 65001 >nul
+set PYTHONIOENCODING=utf-8
+cd /d "%~dp0"
+title Sozlesme Formu - bu pencereyi kapatmayin
+python araclar\form_sunucu.py
+if errorlevel 1 pause
