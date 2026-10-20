@@ -1,4 +1,7 @@
 {
+  "1.2.1": [
+    "Güncellemeden sonra programın kendiliğinden yeniden açılmaması sorunu giderildi."
+  ],
   "1.2.0": [
     "Excel'e aktarma özelliği kaldırıldı; program yalnızca PDF ve Word sözleşme üretir.",
     "Güncellemeler artık daha sık denetleniyor: program açıkken yeni sürüm en geç 30 dakikada bildirilir."
