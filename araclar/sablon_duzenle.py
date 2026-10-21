@@ -12,6 +12,7 @@ from pathlib import Path
 
 import docx
 
+from bicim import altbilgi
 from ortak import araliga_yaz, metin_degistir, paragraf_yaz
 
 KOK = Path(__file__).resolve().parent.parent
@@ -61,11 +62,22 @@ def odeme_alanlari(doc):
     return degisti
 
 
+def kiralama_turu(doc):
+    """3.1'deki 'operatörsüz (şoförsüz)' ve 6.2.6 personel hükmü sözleşmeye göre doldurulur."""
+    for p in doc.paragraphs:
+        if p.text.startswith("3.1.\t") and "operatörsüz (şoförsüz)" in p.text:
+            metin_degistir(p, "operatörsüz (şoförsüz)", "{{KIRALAMA_TURU}}")
+        if p.text.startswith("6.2.6.\t") and "{{OPERATOR_HUKMU}}" not in p.text:
+            paragraf_yaz(p, [("6.2.6.\t", True), ("{{OPERATOR_HUKMU}}", False)])
+
+
 def main():
     doc = docx.Document(SABLON)
     sayi = arac_ve_is_makinasi(doc)
     ve_tekrari(doc)
     odeme = odeme_alanlari(doc)
+    kiralama_turu(doc)
+    altbilgi(doc)   # yalnızca sayfa numarası
     doc.save(SABLON)
     print(f'"araç ve iş makinası": {sayi} yer | ödeme alanları: {"eklendi" if odeme else "zaten var"}')
     kalan = [p.text[:70] for p in tum_paragraflar(doc) if re.search(r"(?<!ve )\b[İi]ş [Mm]akin", p.text)]

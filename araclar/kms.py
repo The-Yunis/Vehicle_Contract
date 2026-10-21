@@ -152,6 +152,7 @@ def form_to_uretici(soz):
         "İmza Tarihi": soz.get("imza", ""),
         "Ödeme Şekli": soz.get("odeme", ""),
         "Çek Vadesi": soz.get("vade", ""),
+        "Kiralama Türü": soz.get("kiralama_turu", ""),
     }
     araclar = [(f"{i}. araç", {
         "Plaka": a.get("plaka", ""), "Cinsi": a.get("cins", ""), "Marka": a.get("marka", ""),

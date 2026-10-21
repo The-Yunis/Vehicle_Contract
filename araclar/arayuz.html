@@ -381,6 +381,8 @@ td small { color: var(--soluk); display: block; font-size: 12px; }
       <div class="alan"><label class="et">Bitiş tarihi <span class="z">*</span></label><input class="girdi" id="s_bitis" type="date" data-kural="bitis"><div class="mesaj"></div></div>
       <div class="alan"><label class="et">İmza tarihi</label><input class="girdi" id="s_imza" type="date">
         <div class="ipucu">Boş bırakılırsa imzada elle yazılır.</div></div>
+      <div class="alan"><label class="et">Kiralama türü</label>
+        <div class="secim"><label><input type="radio" name="kiralama_turu" value="operatorsuz" checked>Operatörsüz / şoförsüz</label><label><input type="radio" name="kiralama_turu" value="operatorlu">Operatörlü / şoförlü</label></div></div>
       <div class="alan"><label class="et">Ödeme şekli</label>
         <div class="secim"><label><input type="radio" name="odeme" value="cek" checked>Vadeli çek</label><label><input type="radio" name="odeme" value="havale">Havale / EFT</label></div></div>
       <div class="alan" id="vade_alan"><label class="et">Çek vadesi (gün) <span class="z">*</span></label>
@@ -498,7 +500,7 @@ td small { color: var(--soluk); display: block; font-size: 12px; }
       <div class="alan genis"><label class="et">Çıktı klasörü</label>
         <div style="display:flex;gap:8px"><input class="girdi" data-ayar="Çıktı Klasörü" readonly><button class="btn" id="klasor_sec" type="button">Gözat…</button></div></div>
       <div class="alan genis"><label class="anahtar"><input type="checkbox" id="logo_ekle"><span class="yuva"></span>
-        <span><b>Sözleşme başlığına şirket logolarını ekle</b><br><small style="color:var(--soluk)">Öztaç ve HİKA logoları her sayfanın üstünde yer alır.</small></span></label></div>
+        <span><b>Sözleşme başlığına şirket logolarını ekle</b><br><small style="color:var(--soluk)">Öztaç ve HİKA logoları ilk sayfanın üstünde yer alır.</small></span></label></div>
     </div>
   </div>
   <div style="display:flex;gap:10px;align-items:center">
@@ -756,6 +758,7 @@ function formOku() {
     no: $("#s_no").value.trim(), kiralayan: kiralayanOku($("#hazirla")),
     baslangic: $("#s_baslangic").value, bitis: $("#s_bitis").value, imza: $("#s_imza").value,
     odeme: $("input[name=odeme]:checked").value, vade: Number($("#s_vade").value) || "",
+    kiralama_turu: $("input[name=kiralama_turu]:checked").value,
     teslim_yeri: $("#s_teslim").value.trim(),
     araclar: $$("#araclar .arac").map(kart => {
       const a = {};
@@ -775,6 +778,7 @@ function formDoldur(s = null, kiralayan = null) {
   const odeme = s ? (s.odeme || (s.durum === "uretildi" ? "havale" : null)) : null;
   $(`input[name=odeme][value=${odeme || VERI.ayarlar["Varsayılan Ödeme Şekli"] || "cek"}]`).checked = true;
   $("#s_vade").value = s?.vade || VERI.ayarlar["Varsayılan Çek Vadesi (gün)"] || 90;
+  $(`input[name=kiralama_turu][value=${s?.kiralama_turu === "operatorlu" ? "operatorlu" : "operatorsuz"}]`).checked = true;
   odemeAyarla();
   $("#araclar").innerHTML = "";
   (s?.araclar?.length ? s.araclar : [{}]).forEach(a => aracEkle(a));
@@ -825,14 +829,14 @@ function olusturPenceresi() {
   const secili = VERI.ayarlar["Çıktılar"] || { docx: true, pdf: true };
   const s = formOku();
   const p = pencere(`<div class="pencere-bas"><div><h3>Çıktı türünü seçin</h3>
-      <p>${kac(s.no)} · ${kac(s.kiralayan.ad)} · ${s.araclar.length} araç · aylık ${tl(aylikToplam(s))} · ${s.odeme === "havale" ? "havale / EFT" : `${s.vade} gün vadeli çek`}</p></div>
+      <p>${kac(s.no)} · ${kac(s.kiralayan.ad)} · ${s.araclar.length} araç · aylık ${tl(aylikToplam(s))} · ${s.kiralama_turu === "operatorlu" ? "operatörlü" : "operatörsüz"} · ${s.odeme === "havale" ? "havale / EFT" : `${s.vade} gün vadeli çek`}</p></div>
       <button class="btn hayalet kucuk kapat" data-kapat>${ik("x")}</button></div>
     <div class="pencere-govde"><div class="cikti-secim">${DOSYA_TURLERI.map(([k, ad, ac, renk, kisa]) => `
       <label><input type="checkbox" value="${k}" ${secili[k] ? "checked" : ""}><span class="tik">${ik("tik")}</span>
         <div class="dosya-ikon" style="background:${renk}">${kisa}</div><b>${ad}</b><small>${ac}</small></label>`).join("")}
     </div>
     <label class="anahtar" style="margin-top:16px"><input type="checkbox" id="olustur_logo" ${VERI.ayarlar["Sözleşmeye Logo Ekle"] !== false ? "checked" : ""}>
-      <span class="yuva"></span><span><b>Şirket logolarını ekle</b><br><small style="color:var(--soluk)">Öztaç ve HİKA logoları her sayfanın üstünde yer alır.</small></span></label>
+      <span class="yuva"></span><span><b>Şirket logolarını ekle</b><br><small style="color:var(--soluk)">Öztaç ve HİKA logoları ilk sayfanın üstünde yer alır.</small></span></label>
     <div id="olustur_mesaj" style="margin-top:12px"></div></div>
     <div class="pencere-alt"><button class="btn" data-kapat>Vazgeç</button>
       <button class="btn ana" id="olustur_basla">${ik("belge")}Oluştur</button></div>`);
@@ -1013,7 +1017,7 @@ const ALANLAR = [
   ["K_IBAN", "IBAN"], ["K_IMZACI", "Kiralayan adına imzalayan"], ["R_UNVAN", "Şirket (kiracı) unvanı"],
   ["R_ADRES", "Şirket adresi"], ["R_TEL", "Şirket telefonu"], ["R_EPOSTA", "Şirket e-postası"],
   ["R_VD", "Şirket vergi dairesi"], ["R_VN", "Şirket VKN"], ["?R_YETKILI", "Şirket imza yetkilisi"],
-  ["R_IMZACI", "Şirket adına imzalayan"], ["SOZ_NO", "Sözleşme no"], ["BASLANGIC", "Teslim tarihi"],
+  ["R_IMZACI", "Şirket adına imzalayan"], ["KIRALAMA_TURU", "operatörsüz (şoförsüz) / operatörlü (şoförlü)"], ["OPERATOR_HUKMU", "Kiralama türüne göre 6.2.6 hükmü"], ["BASLANGIC", "Teslim tarihi"],
   ["BITIS", "Bitiş tarihi"], ["TESLIM_YERI", "Teslim yeri"], ["IMZA_TARIHI", "İmza tarihi"],
   ["SEVK_SURESI", "Sevk talebinden sonra teslim süresi"], ["ARA_TOPLAM", "Aylık toplam (KDV hariç)"],
   ["ARA_TOPLAM_YAZI", "… yazıyla"], ["KDV_ORANI", "KDV oranı"], ["KDV", "KDV tutarı"],

@@ -167,7 +167,7 @@ def tutanaklar(doc, d, araclar):
         r.bold, r.font.size = True, Pt(12)
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         doc.add_paragraph(
-            f'Sözleşme No: {d["SOZ_NO"]}    Kiralayan: {d["K_AD"]}    Kiracı: {d["R_UNVAN"]}'
+            f'Kiralayan: {d["K_AD"]}    Kiracı: {d["R_UNVAN"]}'
         ).runs[0].font.size = Pt(9)
 
         tablo(doc, [
@@ -222,12 +222,29 @@ def tum_paragraflar(doc):
                     yield from c.paragraphs
     yield from doc.paragraphs
     yield from tablolar(doc.tables)
-    for bolum in doc.sections:  # altbilgide {{SOZ_NO}} var
+    for bolum in doc.sections:  # başlık/altbilgide alan olabilir
         for kisim in (bolum.header, bolum.footer):
             if not kisim.is_linked_to_previous:
                 yield from kisim.paragraphs
                 yield from tablolar(kisim.tables)
 
+
+# 6.2.6: kiralama türüne göre şoför/operatör hükmü
+OPERATORSUZ_HUKUM = (
+    "Sözleşme süresince kiracı; araç ve iş makinesinin kullanımına kanuni ve mesleki kalifikasyona ve ehliyetlere "
+    "(E sınıfı, SRC, Psikoteknik vb.) sahip şoför/ personeli tahsis etmekle mükelleftir. İşbu operatör; kullanıma "
+    "tahsis edilen makinayı özenli ve dikkatli şekilde kullanmakla mükelleftir. Kiralayan; araç ve iş makinasının "
+    "kullanımına mahsus tüm dökümantasyonu, kullanım talimatnamesini kiracı ile paylaşmak, önem arz eden hususları "
+    "yazılı surette kiracıya bildirmeyi üstlenmiştir.")
+OPERATORLU_HUKUM = (
+    "Kiralayan, araç ve iş makinasını; kanuni ve mesleki yeterlilik belgelerine (sürücü belgesi, SRC, psikoteknik, "
+    "operatör belgesi vb.) sahip şoför/operatör ile birlikte tahsis eder ve sözleşme süresince çalışır halde tutar. "
+    "Şoför/operatörün ücreti, sosyal güvenlik primleri, yemek, konaklama ve yol giderleri, iş sağlığı ve güvenliği "
+    "yükümlülükleri ile her türlü işçilik alacağı ve şoför/operatörün kusurundan doğan zararlar münhasıran Kiralayana "
+    "aittir; Kiracı ile şoför/operatör arasında hiçbir surette işçi-işveren ilişkisi kurulmaz. Kiracı, işin "
+    "gereklerine uygun görmediği şoför/operatörün değiştirilmesini isteyebilir; Kiralayan bu talebi 24 saat içinde "
+    "karşılar. Şoför/operatör yokluğu, izni veya değişimi nedeniyle makinanın çalışamadığı süreler Madde 7.3 "
+    "kapsamında kullanılamayan süre sayılır.")
 
 LOGO_ALANI = 1.8   # cm²: her logonun sayfa başlığında kaplayacağı yaklaşık alan
 
@@ -242,12 +259,14 @@ def logo_orani(yol):
 
 
 def logo_basligi(doc, logolar):
-    """Sayfa başlığına logoları yan yana (sol/sağ) yerleştirir."""
+    """Logoları yalnızca ilk sayfanın en üstüne yan yana (sol/sağ) yerleştirir."""
     bolum = doc.sections[0]
-    bas = bolum.header
-    bas.is_linked_to_previous = False
     genislik = bolum.page_width - bolum.left_margin - bolum.right_margin
-    t = bas.add_table(rows=1, cols=len(logolar), width=genislik)
+    t = doc.add_table(rows=1, cols=len(logolar))
+    t.autofit = False
+    for c in t.rows[0].cells:
+        c.width = genislik // len(logolar)
+    doc.element.body.insert(0, t._tbl)   # belgenin başına taşı
     for i, (c, logo) in enumerate(zip(t.rows[0].cells, logolar)):
         p = c.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT if i == 0 else WD_ALIGN_PARAGRAPH.RIGHT
@@ -255,9 +274,7 @@ def logo_basligi(doc, logolar):
         # daha iri görünür. Kapladıkları alanı eşitlemek için yükseklik oranın kareköküyle ölçeklenir.
         p.add_run().add_picture(str(logo), height=Cm((LOGO_ALANI / logo_orani(logo)) ** 0.5))
         c.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-    ilk = bas.paragraphs[0]
-    if not ilk.text:
-        ilk._p.getparent().remove(ilk._p)
+        p.paragraph_format.space_after = Pt(0)
 
 
 def sozlesme_yaz(d, araclar, toplam, hedef, sablon=None, logolar=()):
@@ -422,6 +439,12 @@ def sozlesme_isle(s, arac_kayitlari, R, kdv_orani, uyarilar_genel=(), cikti=None
     })
     d["K_IMZACI"] = d["K_YETKILI"] or k_ad
     d["R_IMZACI"] = d["R_YETKILI"] or "Ad Soyad:"
+    if metin(sutun(s, "Kiralama Türü")).lower() == "operatorlu":
+        d["KIRALAMA_TURU"] = "operatörlü (şoförlü)"
+        d["OPERATOR_HUKMU"] = OPERATORLU_HUKUM
+    else:
+        d["KIRALAMA_TURU"] = "operatörsüz (şoförsüz)"
+        d["OPERATOR_HUKMU"] = OPERATORSUZ_HUKUM
     if odeme == "cek":
         gun = int(vade)
         d["ODEME_SEKLI"] = f"Kiralayan adına düzenlenecek {gun} ({yaziyla(gun)}) gün vadeli çek ile"

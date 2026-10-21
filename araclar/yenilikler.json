@@ -1,4 +1,9 @@
 {
+  "1.7.0": [
+    "Kiralama türü: her sözleşmede operatörsüz/şoförsüz ya da operatörlü/şoförlü seçilir. Operatörlüde şoför/operatörün ücreti, SGK'sı ve kusurundan doğan zararlar Kiralayana aittir; Kiracı uygun görmediği şoförün değiştirilmesini isteyebilir.",
+    "Logolar artık yalnızca ilk sayfada.",
+    "Sayfa altlarında yalnızca sayfa numarası var; sözleşme no ve paraf alanı kaldırıldı. Sözleşme no yalnızca program içinde kullanılıyor."
+  ],
   "1.6.0": [
     "Ödeme şekli: her sözleşmede vadeli çek ya da havale/EFT seçilir. Çekte vade (gün) kiralayanla anlaşılana göre girilir; varsayılan 90 gün, Ayarlar'dan değiştirilebilir.",
     "Çekle ödemede banka/IBAN zorunlu değil; sözleşmeye çek teslimiyle ödemenin yapılmış sayılacağı ve vadeden önce ödeme ya da vade farkı istenemeyeceği hükmü eklendi.",

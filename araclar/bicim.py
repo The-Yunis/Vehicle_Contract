@@ -125,10 +125,20 @@ def alan(paragraf, kod):
 
 
 def altbilgi(doc):
+    """Altbilgi: yalnızca ortalı "Sayfa X / Y" (sözleşme no ve paraf alanı v1.7.0'da kaldırıldı)."""
     bolum = doc.sections[0]
     ab = bolum.footer
     ab.is_linked_to_previous = False
+    for p in list(ab.paragraphs)[1:]:
+        p._p.getparent().remove(p._p)
     p = ab.paragraphs[0]
+    for e in list(p._p):
+        if e.tag != qn("w:pPr"):
+            p._p.remove(e)
+    pPr = p._p.get_or_add_pPr()
+    for e in list(pPr):
+        if e.tag in (qn("w:pBdr"), qn("w:tabs")):
+            pPr.remove(e)
     try:
         stil = doc.styles["Footer"]
     except KeyError:
@@ -137,34 +147,12 @@ def altbilgi(doc):
     stil.font.size = Pt(8)
     stil.font.color.rgb = RGBColor(0x59, 0x59, 0x59)
     p.style = stil
-    for r in list(p.runs):
-        r._r.getparent().remove(r._r)
-    p.paragraph_format.tab_stops.add_tab_stop(Cm(8.25), WD_TAB_ALIGNMENT.CENTER)
-    p.paragraph_format.tab_stops.add_tab_stop(METIN_GENISLIGI, WD_TAB_ALIGNMENT.RIGHT)
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p.paragraph_format.space_after = Pt(0)
-    # üstte ince çizgi
-    pBdr = OxmlElement("w:pBdr")
-    ust = OxmlElement("w:top")
-    for k, v in (("w:val", "single"), ("w:sz", "4"), ("w:space", "4"), ("w:color", "A6A6A6")):
-        ust.set(qn(k), v)
-    pBdr.append(ust)
-    p._p.get_or_add_pPr().append(pBdr)
-    p.add_run("Sözleşme No: {{SOZ_NO}}\tSayfa ")
+    p.add_run("Sayfa ")
     alan(p, "PAGE")
     p.add_run(" / ")
     alan(p, "NUMPAGES")
-    p.add_run("\tParaf:  Kiralayan ________   Kiracı ________")
-    for r in p._p.iter(qn("w:r")):
-        rPr = r.find(qn("w:rPr"))
-        if rPr is None:
-            rPr = OxmlElement("w:rPr")
-            r.insert(0, rPr)
-        sz = OxmlElement("w:sz")
-        sz.set(qn("w:val"), "16")
-        renk = OxmlElement("w:color")
-        renk.set(qn("w:val"), "595959")
-        rPr.append(sz)
-        rPr.append(renk)
     bolum.footer_distance = Cm(1.0)
     bolum.header_distance = Cm(0.9)
 
