@@ -365,11 +365,11 @@ td small { color: var(--soluk); display: block; font-size: 12px; }
       <div class="alan"><label class="et">Telefon</label><input class="girdi" data-k="tel" inputmode="tel" placeholder="05xx xxx xx xx"></div>
       <div class="alan"><label class="et">E-posta</label><input class="girdi" data-k="eposta" data-kural="eposta" type="email"><div class="mesaj"></div>
         <div class="ipucu">Sözleşmedeki bildirimler e-posta ile yapılır.</div></div>
-      <div class="alan"><label class="et">Banka / Şube <span class="z">*</span></label>
+      <div class="alan"><label class="et">Banka / Şube <span class="z" data-havale-zorunlu>*</span></label>
         <input class="girdi" data-k="banka" data-kural="banka" placeholder="ör. Ziraat Bankası Batman Şb."><div class="mesaj"></div></div>
-      <div class="alan genis"><label class="et">IBAN <span class="z">*</span></label>
+      <div class="alan genis"><label class="et">IBAN <span class="z" data-havale-zorunlu>*</span></label>
         <input class="girdi" data-k="iban" data-kural="iban" placeholder="TR00 0000 0000 0000 0000 0000 00" maxlength="32"><div class="mesaj"></div>
-        <div class="ipucu">TR ile başlar, 26 karakterdir. Hesap kiralayanın kendi adına olmalı.</div></div>
+        <div class="ipucu">TR ile başlar, 26 karakterdir. Hesap kiralayanın kendi adına olmalı. Çekle ödemede zorunlu değil.</div></div>
     </div>
   </div>
 
@@ -381,6 +381,11 @@ td small { color: var(--soluk); display: block; font-size: 12px; }
       <div class="alan"><label class="et">Bitiş tarihi <span class="z">*</span></label><input class="girdi" id="s_bitis" type="date" data-kural="bitis"><div class="mesaj"></div></div>
       <div class="alan"><label class="et">İmza tarihi</label><input class="girdi" id="s_imza" type="date">
         <div class="ipucu">Boş bırakılırsa imzada elle yazılır.</div></div>
+      <div class="alan"><label class="et">Ödeme şekli</label>
+        <div class="secim"><label><input type="radio" name="odeme" value="cek" checked>Vadeli çek</label><label><input type="radio" name="odeme" value="havale">Havale / EFT</label></div></div>
+      <div class="alan" id="vade_alan"><label class="et">Çek vadesi (gün) <span class="z">*</span></label>
+        <input class="girdi" id="s_vade" data-kural="vade" inputmode="numeric" maxlength="3"><div class="mesaj"></div>
+        <div class="ipucu">Kiralayanla anlaşılan vade.</div></div>
       <div class="alan genis"><label class="et">Teslim yeri / adresi <span class="z">*</span></label>
         <input class="girdi" id="s_teslim" data-kural="teslim" placeholder="ör. Batman-Hasankeyf Karayolu Bakım Şefliği"><div class="mesaj"></div></div>
     </div>
@@ -486,6 +491,9 @@ td small { color: var(--soluk); display: block; font-size: 12px; }
     <div class="kart-bas"><div><h3>Sözleşme ve çıktılar</h3></div></div>
     <div class="izgara">
       <div class="alan"><label class="et">KDV oranı (%)</label><input class="girdi" data-ayar="KDV Oranı (%)" type="number" min="0" max="100"></div>
+      <div class="alan"><label class="et">Varsayılan ödeme şekli</label>
+        <select class="girdi" data-ayar="Varsayılan Ödeme Şekli"><option value="cek">Vadeli çek</option><option value="havale">Havale / EFT</option></select></div>
+      <div class="alan"><label class="et">Varsayılan çek vadesi (gün)</label><input class="girdi" data-ayar="Varsayılan Çek Vadesi (gün)" type="number" min="1" max="365"></div>
       <div class="alan"><label class="et">Sevk talebinden sonra teslim süresi</label><input class="girdi" data-ayar="Sevk Talebinden Sonra Teslim Süresi"></div>
       <div class="alan genis"><label class="et">Çıktı klasörü</label>
         <div style="display:flex;gap:8px"><input class="girdi" data-ayar="Çıktı Klasörü" readonly><button class="btn" id="klasor_sec" type="button">Gözat…</button></div></div>
@@ -620,6 +628,14 @@ function tcknGecerli(s) {
   const tek = d[0] + d[2] + d[4] + d[6] + d[8], cift = d[1] + d[3] + d[5] + d[7];
   return ((tek * 7 - cift) % 10 + 10) % 10 === d[9] && d.slice(0, 10).reduce((a, b) => a + b) % 10 === d[10];
 }
+// Banka/IBAN yalnızca havale ile ödemede zorunlu; kiralayan rehberi penceresinde hep isteğe bağlı
+const havaleMi = kap => !kap?.closest?.(".pencere") && ($("input[name=odeme]:checked") || {}).value === "havale";
+function odemeAyarla() {
+  const havale = havaleMi(document);
+  $("#vade_alan").hidden = havale;
+  $$("#hazirla [data-havale-zorunlu]").forEach(e => e.hidden = !havale);
+  $$("#hazirla [data-k=banka], #hazirla [data-k=iban], #s_vade").forEach(i => { if (i.value || i.closest(".alan.hatali")) kontrol(i); });
+}
 const sirketMi = kap => ($("input[name=tur]:checked, input[name=tur_p]:checked", kap) || {}).value === "sirket";
 const KURAL = {
   ad: (v, kap) => v.trim() ? "" : (sirketMi(kap) ? "Şirket unvanını yazın." : "Ad soyad yazın."),
@@ -631,14 +647,15 @@ const KURAL = {
   },
   adres: v => v.trim() ? "" : "Adres yazın.",
   eposta: v => !v.trim() || /^\S+@\S+\.\S+$/.test(v.trim()) ? "" : "E-posta adresi hatalı görünüyor.",
-  banka: v => v.trim() ? "" : "Banka adını yazın.",
-  iban: v => {
+  banka: (v, kap) => v.trim() || !havaleMi(kap) ? "" : "Havale ile ödemede banka adı gerekli.",
+  iban: (v, kap) => {
     v = v.replace(/\s/g, "").toUpperCase();
-    if (!v) return "IBAN yazın.";
+    if (!v) return havaleMi(kap) ? "Havale ile ödemede IBAN gerekli." : "";
     if (!v.startsWith("TR")) return "IBAN 'TR' ile başlamalı. Hesap numarası değil, IBAN girin.";
     if (!/^TR\d*$/.test(v)) return "TR'den sonra yalnızca rakam olmalı.";
     return v.length === 26 ? "" : `IBAN 26 karakter olmalı (şu an ${v.length}).`;
   },
+  vade: v => { if (!havaleMi(document)) { const n = Number(v); return Number.isInteger(n) && n >= 1 && n <= 365 ? "" : "1 ile 365 arasında gün sayısı yazın."; } return ""; },
   no: v => {
     v = v.trim();
     if (!v) return "Sözleşme no yazın.";
@@ -689,6 +706,7 @@ document.addEventListener("input", e => {
   if (t.id === "s_baslangic" && $("#s_bitis").value) kontrol($("#s_bitis"));
   if (t.closest("#hazirla")) formDegisti = true;
 });
+document.addEventListener("change", e => { if (e.target.name === "odeme") odemeAyarla(); });
 document.addEventListener("change", e => { if (e.target.name === "tur") turAyarla(e.target.closest("[data-kap]") || document); });
 document.addEventListener("focusout", e => {
   const t = e.target;
@@ -737,6 +755,7 @@ function formOku() {
   return {
     no: $("#s_no").value.trim(), kiralayan: kiralayanOku($("#hazirla")),
     baslangic: $("#s_baslangic").value, bitis: $("#s_bitis").value, imza: $("#s_imza").value,
+    odeme: $("input[name=odeme]:checked").value, vade: Number($("#s_vade").value) || "",
     teslim_yeri: $("#s_teslim").value.trim(),
     araclar: $$("#araclar .arac").map(kart => {
       const a = {};
@@ -752,6 +771,11 @@ function formDoldur(s = null, kiralayan = null) {
   $("#s_no").value = s?.no ?? sonrakiNo();
   $("#s_baslangic").value = s?.baslangic ?? ""; $("#s_bitis").value = s?.bitis ?? "";
   $("#s_imza").value = s?.imza ?? ""; $("#s_teslim").value = s?.teslim_yeri ?? "";
+  // eski kayıtlarda ödeme bilgisi yok: o kayıtlar IBAN'a ödemeyle üretilmişti
+  const odeme = s ? (s.odeme || (s.durum === "uretildi" ? "havale" : null)) : null;
+  $(`input[name=odeme][value=${odeme || VERI.ayarlar["Varsayılan Ödeme Şekli"] || "cek"}]`).checked = true;
+  $("#s_vade").value = s?.vade || VERI.ayarlar["Varsayılan Çek Vadesi (gün)"] || 90;
+  odemeAyarla();
   $("#araclar").innerHTML = "";
   (s?.araclar?.length ? s.araclar : [{}]).forEach(a => aracEkle(a));
   $("#kayitli").value = "";
@@ -801,7 +825,7 @@ function olusturPenceresi() {
   const secili = VERI.ayarlar["Çıktılar"] || { docx: true, pdf: true };
   const s = formOku();
   const p = pencere(`<div class="pencere-bas"><div><h3>Çıktı türünü seçin</h3>
-      <p>${kac(s.no)} · ${kac(s.kiralayan.ad)} · ${s.araclar.length} araç · aylık ${tl(aylikToplam(s))}</p></div>
+      <p>${kac(s.no)} · ${kac(s.kiralayan.ad)} · ${s.araclar.length} araç · aylık ${tl(aylikToplam(s))} · ${s.odeme === "havale" ? "havale / EFT" : `${s.vade} gün vadeli çek`}</p></div>
       <button class="btn hayalet kucuk kapat" data-kapat>${ik("x")}</button></div>
     <div class="pencere-govde"><div class="cikti-secim">${DOSYA_TURLERI.map(([k, ad, ac, renk, kisa]) => `
       <label><input type="checkbox" value="${k}" ${secili[k] ? "checked" : ""}><span class="tik">${ik("tik")}</span>
@@ -985,6 +1009,7 @@ const ALANLAR = [
   ["K_AD", "Kiralayan adı / unvanı"], ["K_KIMLIK", "T.C. Kimlik No: … / VKN: …"], ["K_ADRES", "Kiralayan adresi"],
   ["K_TEL", "Kiralayan telefonu"], ["K_EPOSTA", "Kiralayan e-postası"], ["K_VD", "Kiralayan vergi dairesi"],
   ["K_VN", "Kiralayan VKN (şirketse)"], ["?K_YETKILI", "Kiralayan şirket yetkilisi"], ["K_BANKA", "Banka / şube"],
+  ["ODEME_SEKLI", "\"90 (doksan) gün vadeli çek ile\" / \"banka havalesi/EFT yoluyla\""], ["ODEME_EK", "Ödeme şekline göre 5.2.1 hükmü"],
   ["K_IBAN", "IBAN"], ["K_IMZACI", "Kiralayan adına imzalayan"], ["R_UNVAN", "Şirket (kiracı) unvanı"],
   ["R_ADRES", "Şirket adresi"], ["R_TEL", "Şirket telefonu"], ["R_EPOSTA", "Şirket e-postası"],
   ["R_VD", "Şirket vergi dairesi"], ["R_VN", "Şirket VKN"], ["?R_YETKILI", "Şirket imza yetkilisi"],
@@ -1013,7 +1038,7 @@ function ayarlarDoldur() {
 }
 function ayarlarOku() {
   const a = {};
-  $$("[data-ayar]").forEach(i => a[i.dataset.ayar] = i.dataset.ayar.startsWith("KDV") ? (Number(i.value) || 0)
+  $$("[data-ayar]").forEach(i => a[i.dataset.ayar] = /^(KDV|Varsayılan Çek)/.test(i.dataset.ayar) ? (Number(i.value) || 0)
     : i.dataset.ayar === "Kullanıcı Kodu" ? i.value.trim().toUpperCase().replace(/[^A-ZÇĞİÖŞÜ0-9]/g, "") : i.value.trim());
   a["Sözleşmeye Logo Ekle"] = $("#logo_ekle").checked;
   return a;

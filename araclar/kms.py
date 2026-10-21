@@ -60,6 +60,8 @@ VARSAYILAN_AYARLAR = {
     "Çıktılar": {"docx": True, "pdf": True},
     "Son Görülen Sürüm": "",
     "Sözleşmeye Logo Ekle": True,
+    "Varsayılan Ödeme Şekli": "cek",          # cek | havale
+    "Varsayılan Çek Vadesi (gün)": 90,
 }
 
 KILIT = threading.Lock()
@@ -148,6 +150,8 @@ def form_to_uretici(soz):
         "Bitiş Tarihi": soz.get("bitis", ""),
         "Teslim Yeri / Adresi": soz.get("teslim_yeri", ""),
         "İmza Tarihi": soz.get("imza", ""),
+        "Ödeme Şekli": soz.get("odeme", ""),
+        "Çek Vadesi": soz.get("vade", ""),
     }
     araclar = [(f"{i}. araç", {
         "Plaka": a.get("plaka", ""), "Cinsi": a.get("cins", ""), "Marka": a.get("marka", ""),

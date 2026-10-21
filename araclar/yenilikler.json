@@ -1,4 +1,9 @@
 {
+  "1.6.0": [
+    "Ödeme şekli: her sözleşmede vadeli çek ya da havale/EFT seçilir. Çekte vade (gün) kiralayanla anlaşılana göre girilir; varsayılan 90 gün, Ayarlar'dan değiştirilebilir.",
+    "Çekle ödemede banka/IBAN zorunlu değil; sözleşmeye çek teslimiyle ödemenin yapılmış sayılacağı ve vadeden önce ödeme ya da vade farkı istenemeyeceği hükmü eklendi.",
+    "Sözleşme metninde \"iş makinası\" ifadeleri şirketin düzeltmesine göre \"araç ve iş makinası\" oldu."
+  ],
   "1.5.3": [
     "Öztaç ve HİKA logoları her yerde (sözleşme başlığı, program, açılış ekranı) eşit görsel ağırlıkta ve daha sade boyutta."
   ],

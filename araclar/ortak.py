@@ -36,6 +36,32 @@ def metin_degistir(p, eski, yeni):
             return
 
 
+def araliga_yaz(p, bas, son, yeni):
+    """Paragraf metninin [bas, son) aralığını `yeni` ile değiştirir (run sınırlarını aşsa da)."""
+    pos = 0
+    ilk = True
+    for r in p.runs:
+        rbas, rson = pos, pos + len(r.text)
+        pos = rson
+        if rson <= bas or rbas >= son:
+            continue
+        t = r.text
+        sol = t[:max(bas - rbas, 0)]
+        sag = t[max(son - rbas, 0):] if rson > son else ""
+        if ilk:
+            r.text = sol + yeni + sag
+            ilk = False
+        else:
+            r.text = sag
+    if ilk:  # aralık boşsa (saf ekleme): konumdaki run'ın içine yaz
+        pos = 0
+        for r in p.runs:
+            if pos <= bas <= pos + len(r.text):
+                r.text = r.text[:bas - pos] + yeni + r.text[bas - pos:]
+                return
+            pos += len(r.text)
+
+
 def paragraf_yaz(p, parcalar):
     """Paragrafın tüm run'larını silip (metin, kalın) parçalarıyla yeniden yazar.
     Paragraf biçimi (girinti, hizalama, stil) korunur."""

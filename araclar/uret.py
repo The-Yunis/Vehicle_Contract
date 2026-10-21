@@ -357,10 +357,20 @@ def sozlesme_isle(s, arac_kayitlari, R, kdv_orani, uyarilar_genel=(), cikti=None
         hatalar.append("Teslim yeri boş")
     banka = metin(sutun(s, "Banka"))
     iban = re.sub(r"\s", "", metin(sutun(s, "IBAN"))).upper()
-    if not banka:
-        hatalar.append("Banka adı boş")
-    if not re.fullmatch(r"TR\d{24}", iban):
-        hatalar.append("IBAN geçersiz (TR + 24 rakam olmalı)")
+    # Ödeme: vadeli çek (şirketin olağan yöntemi, vade kiralayanla ayrı anlaşılır) ya da havale/EFT.
+    # Eski kayıtlarda ödeme şekli yoksa havale sayılır (o zamanki şablon IBAN'a ödeme diyordu).
+    odeme = metin(sutun(s, "Ödeme Şekli")).lower() or "havale"
+    vade = re.sub(r"\D", "", metin(sutun(s, "Çek Vadesi")))
+    if odeme == "cek":
+        if not vade or not 1 <= int(vade) <= 365:
+            hatalar.append("Çek vadesi 1 ile 365 gün arasında olmalı")
+        if iban and not re.fullmatch(r"TR\d{24}", iban):
+            hatalar.append("IBAN geçersiz (TR + 24 rakam olmalı) — çekle ödemede boş bırakılabilir")
+    else:
+        if not banka:
+            hatalar.append("Banka adı boş")
+        if not re.fullmatch(r"TR\d{24}", iban):
+            hatalar.append("IBAN geçersiz (TR + 24 rakam olmalı)")
     iban = " ".join(iban[i:i + 4] for i in range(0, len(iban), 4))
     if metin(sutun(s, "E-posta")) in ("", "-"):
         uyarilar.append("Kiralayan e-postası boş (Madde 1.4 bildirimleri e-posta ile yapılıyor)")
@@ -412,6 +422,20 @@ def sozlesme_isle(s, arac_kayitlari, R, kdv_orani, uyarilar_genel=(), cikti=None
     })
     d["K_IMZACI"] = d["K_YETKILI"] or k_ad
     d["R_IMZACI"] = d["R_YETKILI"] or "Ad Soyad:"
+    if odeme == "cek":
+        gun = int(vade)
+        d["ODEME_SEKLI"] = f"Kiralayan adına düzenlenecek {gun} ({yaziyla(gun)}) gün vadeli çek ile"
+        d["ODEME_EK"] = (
+            "Çekin Kiralayana veya yetkilisine teslimiyle Kiracının ilgili döneme ilişkin ödeme yükümlülüğü, "
+            "çek bedelinin vadesinde ödenmesi kaydıyla yerine getirilmiş sayılır. Kiralayan çek vadesinden önce "
+            "ödeme talep edemez; vade farkı, faiz veya sair herhangi bir bedel isteyemez."
+            + (f" Kiralayanın banka hesabı: {banka} – {iban}." if iban else ""))
+    else:
+        d["ODEME_SEKLI"] = "banka havalesi/EFT yoluyla"
+        d["ODEME_EK"] = (
+            f"Kira bedelleri yalnızca Kiralayan adına açılmış {banka} nezdindeki {iban} IBAN numaralı hesaba "
+            "ödenir. Kiralayan, hesap bilgisindeki değişikliği imzalı yazı ile bildirmedikçe bu hesaba yapılan "
+            "ödemeler geçerli ve borçtan kurtarıcıdır; üçüncü kişi adına açılmış hesaplara ödeme talep edilemez.")
 
     cikti.mkdir(exist_ok=True)
     guvenli = re.sub(r'[\\/:*?"<>|]+', "_", f"{soz_no}_{k_ad}")[:80].rstrip(". ")
