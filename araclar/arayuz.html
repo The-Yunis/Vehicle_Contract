@@ -1278,7 +1278,12 @@ window.addEventListener("beforeunload", e => { if (formDegisti) { e.preventDefau
   sayfa(BASLIKLAR[location.hash.slice(1)] ? location.hash.slice(1) : "panel");
   if (yerelAcilis) {   // sayfa ekrana çizildikten sonra programa "hazırım" de
     $("#acilis").classList.add("gizle");
-    requestAnimationFrame(() => requestAnimationFrame(() => api("/api/hazir", {}).catch(() => {})));
+    // Asıl yol: sayfa ekrana çizilince. Yedek: pencere örtülü sayıldığında çizim (rAF) durabilir,
+    // o yüzden kısa bir süre sonra her halükârda haber ver; açılış ekranı ekranda takılı kalmasın.
+    let haberVerildi = false;
+    const hazir = () => { if (!haberVerildi) { haberVerildi = true; api("/api/hazir", {}).catch(() => {}); } };
+    requestAnimationFrame(() => requestAnimationFrame(hazir));
+    setTimeout(hazir, 400);
   }
   setTimeout(() => {
     $("#acilis").classList.add("gizle");

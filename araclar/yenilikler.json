@@ -1,4 +1,7 @@
 {
+  "1.7.3": [
+    "Düzeltme: Açılışta beyaz karşılama ekranı bazen program hazır olduğu halde ekranda kalıp diğer pencereleri kapatıyordu; artık program hazır olunca hemen kapanıyor, en geç 8 saniyede kendiliğinden, tıklayınca da anında kalkıyor."
+  ],
   "1.7.2": [
     "Sözleşmedeki araç tablosu sayfa genişliğine oturtuldu: plaka, cins, marka/model ve şasi no artık alt satıra düşmüyor; teknik özellik ve ataşman, girildiyse aracın altında ayrı satırda yazılıyor."
   ],

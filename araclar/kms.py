@@ -401,7 +401,9 @@ def pencere_ac(adres):
         str(tarayici), f"--app={adres}", f"--user-data-dir={VERI_KLASOR / 'pencere'}",
         "--start-maximized",  # pencere her açılışta tam ekran büyütülmüş gelir
         "--no-first-run", "--no-default-browser-check",
-        "--disable-features=Translate,msEdgeSidebarV2", "--disable-sync",
+        # CalculateNativeWinOcclusion: Edge, tamamen örtülen (açılış ekranının arkasındaki) sayfayı
+        # "gizli" sayıp çizimi durduruyordu; sayfa hazır sinyali gitmiyor, açılış ekranı ekranda kalıyordu
+        "--disable-features=Translate,msEdgeSidebarV2,CalculateNativeWinOcclusion", "--disable-sync",
         # program penceresinde gereksiz Edge servisleri: açılışı hızlandırır
         "--disable-extensions", "--disable-background-networking", "--disable-component-update",
         "--disable-default-apps", "--no-pings", "--disable-breakpad",
@@ -457,15 +459,25 @@ class AcilisEkrani:
         kok.update()
         yukleniyor_kapat()   # tam ekran açılış geldi: küçük kart kalkabilir
 
-    def bekle(self, olay, en_az=0.0, en_cok=25):
+    def bekle(self, olay, en_az=0.0, en_cok=8):
         bas = time.time()
+        kapandi = []
+
+        def kapat(_=None):   # tıklayınca da kapanır: hiçbir durumda kullanıcıyı kilitlemesin
+            if not kapandi:
+                kapandi.append(1)
+                self.kok.destroy()
+
+        self.kok.bind("<Button-1>", kapat)
 
         def tik():
+            if kapandi:
+                return
             self.konum = self.konum + 6 if self.konum < 220 else -88
             self.cubuk.coords(self.serit, self.konum, 0, self.konum + 88, 3)
             gecen = time.time() - bas
             if (olay.is_set() and gecen >= en_az) or gecen >= en_cok:
-                self.kok.after(150, self.kok.destroy)   # sayfa ekrana basılsın, sonra kalk
+                self.kok.after(150, kapat)   # sayfa ekrana basılsın, sonra kalk
                 return
             self.kok.after(16, tik)
 
