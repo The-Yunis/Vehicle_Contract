@@ -13,7 +13,7 @@ from pathlib import Path
 import docx
 
 from bicim import altbilgi
-from ortak import araliga_yaz, metin_degistir, paragraf_yaz
+from ortak import araliga_yaz, metin_degistir, paragraf_ekle_sonra, paragraf_yaz
 
 KOK = Path(__file__).resolve().parent.parent
 SABLON = KOK / "SABLON.docx"
@@ -71,12 +71,25 @@ def kiralama_turu(doc):
             paragraf_yaz(p, [("6.2.6.\t", True), ("{{OPERATOR_HUKMU}}", False)])
 
 
+def kimlik_satirlari(doc):
+    """Kiralayan: Vergi No her zaman yazılır; T.C. Kimlik No isteğe bağlı ayrı satır (boşsa satır silinir)."""
+    for p in doc.paragraphs:
+        m = re.search(r"\s*\{\{K_KIMLIK\}\}", p.text)
+        if m:
+            araliga_yaz(p, m.start(), m.end(), "")
+    if any("{{?K_TCKN}}" in p.text for p in doc.paragraphs):
+        return
+    vn = next(p for p in doc.paragraphs if "{{K_VN}}" in p.text)
+    paragraf_ekle_sonra(vn, [("T.C. Kimlik No", True), ("\t: ", True), ("{{?K_TCKN}}", False)])
+
+
 def main():
     doc = docx.Document(SABLON)
     sayi = arac_ve_is_makinasi(doc)
     ve_tekrari(doc)
     odeme = odeme_alanlari(doc)
     kiralama_turu(doc)
+    kimlik_satirlari(doc)
     altbilgi(doc)   # yalnızca sayfa numarası
     doc.save(SABLON)
     print(f'"araç ve iş makinası": {sayi} yer | ödeme alanları: {"eklendi" if odeme else "zaten var"}')

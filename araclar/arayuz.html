@@ -355,8 +355,10 @@ td small { color: var(--soluk); display: block; font-size: 12px; }
         <div class="secim"><label><input type="radio" name="tur" value="sahis" checked>Şahıs</label><label><input type="radio" name="tur" value="sirket">Şirket</label></div></div>
       <div class="alan genis"><label class="et"><span data-tur-etiket="ad">Adı Soyadı</span> <span class="z">*</span></label>
         <input class="girdi" data-k="ad" data-kural="ad" autocomplete="off"><div class="mesaj"></div></div>
-      <div class="alan"><label class="et"><span data-tur-etiket="kimlik">T.C. Kimlik No</span> <span class="z">*</span></label>
+      <div class="alan"><label class="et">Vergi No <span class="z">*</span></label>
         <input class="girdi" data-k="kimlik" data-kural="kimlik" inputmode="numeric" maxlength="11"><div class="mesaj"></div></div>
+      <div class="alan" data-sahis-alan><label class="et">T.C. Kimlik No <small style="font-weight:400;color:var(--soluk)">(isteğe bağlı)</small></label>
+        <input class="girdi" data-k="tckn" data-kural="tckn" inputmode="numeric" maxlength="11"><div class="mesaj"></div></div>
       <div class="alan"><label class="et">Vergi Dairesi</label><input class="girdi" data-k="vd"></div>
       <div class="alan" data-sirket-alan hidden><label class="et">Şirket yetkilisi (imzalayan)</label>
         <input class="girdi" data-k="yetkili" placeholder="Ad Soyad - Unvan"></div>
@@ -437,7 +439,7 @@ td small { color: var(--soluk); display: block; font-size: 12px; }
     <button class="btn ana" id="kiralayan_yeni"><svg class="ik"><use href="#i-arti"/></svg>Kiralayan ekle</button>
   </div>
   <div class="tablo-sar"><table>
-    <thead><tr><th>Kiralayan</th><th>TCKN / VKN</th><th>İletişim</th><th>Banka / IBAN</th><th>Sözleşme</th><th></th></tr></thead>
+    <thead><tr><th>Kiralayan</th><th>Vergi No</th><th>İletişim</th><th>Banka / IBAN</th><th>Sözleşme</th><th></th></tr></thead>
     <tbody id="kir_govde"></tbody></table></div>
 </section>
 
@@ -641,8 +643,12 @@ function odemeAyarla() {
 const sirketMi = kap => ($("input[name=tur]:checked, input[name=tur_p]:checked", kap) || {}).value === "sirket";
 const KURAL = {
   ad: (v, kap) => v.trim() ? "" : (sirketMi(kap) ? "Şirket unvanını yazın." : "Ad soyad yazın."),
+  tckn: v => { v = v.replace(/\D/g, ""); return !v || tcknGecerli(v) ? "" : "Bu T.C. Kimlik No geçerli değil (boş bırakılabilir)."; },
   kimlik: (v, kap) => {
     v = v.replace(/\D/g, "");
+    if (v.length !== 10 && v.length !== 11) return `Vergi No 10 haneli olmalı; şahıslarda 11 haneli de olabilir (şu an ${v.length}).`;
+    if (v.length === 11 && !tcknGecerli(v)) return "11 haneli vergi no geçerli değil; rakamları kontrol edin.";
+    return "";
     if (sirketMi(kap)) return v.length === 10 ? "" : `Vergi no 10 haneli olmalı (şu an ${v.length}).`;
     if (v.length !== 11) return `TC kimlik no 11 haneli olmalı (şu an ${v.length}).`;
     return tcknGecerli(v) ? "" : "Bu TC kimlik no geçerli değil; rakamları kontrol edin.";
@@ -694,15 +700,14 @@ function ibanBicim(i) { i.value = i.value.replace(/\s/g, "").toUpperCase().repla
 function turAyarla(kap) {
   const s = sirketMi(kap);
   $$("[data-tur-etiket=ad]", kap).forEach(e => e.textContent = s ? "Şirket Unvanı" : "Adı Soyadı");
-  $$("[data-tur-etiket=kimlik]", kap).forEach(e => e.textContent = s ? "Vergi No (VKN)" : "T.C. Kimlik No");
-  $$("[data-k=kimlik]", kap).forEach(i => { i.maxLength = s ? 10 : 11; if (i.value) kontrol(i); });
+  $$("[data-sahis-alan]", kap).forEach(e => e.hidden = s);
   $$("[data-sirket-alan]", kap).forEach(e => e.hidden = !s);
 }
 // girdi davranışları (form ve pencerelerde ortak)
 document.addEventListener("input", e => {
   const t = e.target;
   if (t.dataset.k === "iban") ibanBicim(t);
-  if (t.dataset.k === "kimlik") t.value = t.value.replace(/\D/g, "");
+  if (t.dataset.k === "kimlik" || t.dataset.k === "tckn") t.value = t.value.replace(/\D/g, "");
   if (t.dataset.a === "bedel") hesapla();
   if (t.closest(".alan.hatali")) kontrol(t);
   if (t.id === "s_baslangic" && $("#s_bitis").value) kontrol($("#s_bitis"));
@@ -744,11 +749,13 @@ function kiralayanOku(kap) {
   const k = { tur: sirketMi(kap) ? "sirket" : "sahis" };
   $$("[data-k]", kap).forEach(i => k[i.dataset.k] = i.value.trim());
   k.kimlik = (k.kimlik || "").replace(/\D/g, "");
+  k.tckn = k.tur === "sirket" ? "" : (k.tckn || "").replace(/\D/g, "");
   k.iban = (k.iban || "").replace(/\s/g, "").toUpperCase();
   if (k.tur !== "sirket") k.yetkili = "";
   return k;
 }
 function kiralayanYaz(kap, k = {}) {
+  if (k.tur !== "sirket" && !k.tckn && (k.kimlik || "").length === 11) k = { ...k, tckn: k.kimlik };
   $(`input[name=tur][value=${k.tur === "sirket" ? "sirket" : "sahis"}]`, kap).checked = true;
   turAyarla(kap);
   $$("[data-k]", kap).forEach(i => { i.value = k[i.dataset.k] ?? ""; if (i.dataset.k === "iban") ibanBicim(i); });
@@ -954,7 +961,7 @@ function kiralayanlarCiz() {
     const n = VERI.sozlesmeler.filter(s => (s.kiralayan?.kimlik || "") === k.kimlik).length;
     return `<tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar" style="background:var(--laci-acik);color:var(--laci)">${kac(basHarf(k.ad))}</span>
         <div><b>${kac(k.ad)}</b><small>${k.tur === "sirket" ? "Şirket" : "Şahıs"}${k.yetkili ? " · " + kac(k.yetkili) : ""}</small></div></div></td>
-      <td>${kac(k.kimlik)}</td><td>${kac(k.tel || "—")}<small>${kac(k.eposta || "")}</small></td>
+      <td>${kac(k.kimlik)}${k.tckn ? `<small>TC ${kac(k.tckn)}</small>` : ""}</td><td>${kac(k.tel || "—")}<small>${kac(k.eposta || "")}</small></td>
       <td>${kac(k.banka || "—")}<small>${kac((k.iban || "").replace(/(.{4})/g, "$1 "))}</small></td><td>${n}</td>
       <td><div class="islemler"><button class="btn kucuk" data-yeni-soz="${kac(k.kimlik)}">${ik("arti")}Sözleşme</button>
         <button class="btn kucuk" data-kir-duzenle="${kac(k.kimlik)}">${ik("kalem")}Düzenle</button>
@@ -987,8 +994,7 @@ function kiralayanPenceresi(k = null) {
   const sirket = () => $("input[name=tur_p]:checked", kap).value === "sirket";
   const etiketle = () => {
     $("[data-tur-etiket=ad]", kap).textContent = sirket() ? "Şirket Unvanı" : "Adı Soyadı";
-    $("[data-tur-etiket=kimlik]", kap).textContent = sirket() ? "Vergi No (VKN)" : "T.C. Kimlik No";
-    $("[data-k=kimlik]", kap).maxLength = sirket() ? 10 : 11;
+    $$("[data-sahis-alan]", kap).forEach(e => e.hidden = sirket());
     $("[data-sirket-alan]", kap).hidden = !sirket();
   };
   $$("input[name=tur_p]", kap).forEach(r => { r.checked = r.value === (k?.tur === "sirket" ? "sirket" : "sahis"); r.onchange = () => { etiketle(); kontrol($("[data-k=kimlik]", kap)); }; });
@@ -996,11 +1002,11 @@ function kiralayanPenceresi(k = null) {
   $$(".alan", kap).forEach(a => { a.classList.remove("hatali"); const m = $(".mesaj", a); if (m) m.textContent = ""; });
   etiketle();
   $("#kir_kaydet", p).onclick = async () => {
-    const hatali = hepsiniKontrol(kap).filter(i => ["ad", "kimlik", "adres", "eposta", "banka", "iban"].includes(i.dataset.kural));
+    const hatali = hepsiniKontrol(kap).filter(i => ["ad", "kimlik", "tckn", "adres", "eposta", "banka", "iban"].includes(i.dataset.kural));
     if (hatali.length) { hatali[0].focus(); return; }
     const yeni = { tur: sirket() ? "sirket" : "sahis" };
     $$("[data-k]", kap).forEach(i => yeni[i.dataset.k] = i.value.trim());
-    yeni.kimlik = yeni.kimlik.replace(/\D/g, ""); yeni.iban = yeni.iban.replace(/\s/g, "").toUpperCase();
+    yeni.kimlik = yeni.kimlik.replace(/\D/g, ""); yeni.tckn = yeni.tur === "sirket" ? "" : (yeni.tckn || "").replace(/\D/g, ""); yeni.iban = yeni.iban.replace(/\s/g, "").toUpperCase();
     if (yeni.tur !== "sirket") yeni.yetkili = "";
     await api("/api/kiralayan_kaydet", { kiralayan: yeni, eski_kimlik: k?.kimlik });
     pencereKapat(); await veriYukle(); bildir("Kiralayan kaydedildi");
@@ -1010,9 +1016,9 @@ $("#kiralayan_yeni").onclick = () => kiralayanPenceresi();
 
 // ---------------------------------------------------------------- şablon
 const ALANLAR = [
-  ["K_AD", "Kiralayan adı / unvanı"], ["K_KIMLIK", "T.C. Kimlik No: … / VKN: …"], ["K_ADRES", "Kiralayan adresi"],
+  ["K_AD", "Kiralayan adı / unvanı"], ["?K_TCKN", "Kiralayan T.C. Kimlik No (isteğe bağlı)"], ["K_ADRES", "Kiralayan adresi"],
   ["K_TEL", "Kiralayan telefonu"], ["K_EPOSTA", "Kiralayan e-postası"], ["K_VD", "Kiralayan vergi dairesi"],
-  ["K_VN", "Kiralayan VKN (şirketse)"], ["?K_YETKILI", "Kiralayan şirket yetkilisi"], ["K_BANKA", "Banka / şube"],
+  ["K_VN", "Kiralayan vergi no"], ["?K_YETKILI", "Kiralayan şirket yetkilisi"], ["K_BANKA", "Banka / şube"],
   ["ODEME_SEKLI", "\"90 (doksan) gün vadeli çek ile\" / \"banka havalesi/EFT yoluyla\""], ["ODEME_EK", "Ödeme şekline göre 5.2.1 hükmü"],
   ["K_IBAN", "IBAN"], ["K_IMZACI", "Kiralayan adına imzalayan"], ["R_UNVAN", "Şirket (kiracı) unvanı"],
   ["R_ADRES", "Şirket adresi"], ["R_TEL", "Şirket telefonu"], ["R_EPOSTA", "Şirket e-postası"],

@@ -1,4 +1,8 @@
 {
+  "1.7.1": [
+    "Kiralayanda Vergi No zorunlu ve sözleşmede her zaman yazıyor; T.C. Kimlik No isteğe bağlı (girilirse ayrı satırda yazılır).",
+    "Daha hızlı açılış: programa tıkladığınız anda yükleniyor kartı görünür; ağır bileşenler ilk sözleşme oluşturulurken yüklenir."
+  ],
   "1.7.0": [
     "Kiralama türü: her sözleşmede operatörsüz/şoförsüz ya da operatörlü/şoförlü seçilir. Operatörlüde şoför/operatörün ücreti, SGK'sı ve kusurundan doğan zararlar Kiralayana aittir; Kiracı uygun görmediği şoförün değiştirilmesini isteyebilir.",
     "Logolar artık yalnızca ilk sayfada.",

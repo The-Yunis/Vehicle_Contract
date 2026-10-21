@@ -66,7 +66,11 @@ def main():
         "--add-data", f"{ARACLAR / 'varliklar'};varliklar",
         "--add-data", f"{KOK / 'SABLON.docx'};.",
         "--hidden-import", "pythoncom", "--hidden-import", "win32com.client",
-        *[a for m in ("numpy", "pandas", "matplotlib", "PIL", "IPython") for a in ("--exclude-module", m)],
+        # openpyxl yalnızca eski Excel yolunda kullanılır; exe'de yok (daha küçük exe, daha hızlı açılış)
+        *[a for m in ("numpy", "pandas", "matplotlib", "PIL", "IPython", "openpyxl", "et_xmlfile")
+          for a in ("--exclude-module", m)],
+        # exe kendini açarken anında görünen küçük açılış görseli
+        "--splash", str(ARACLAR / "varliklar" / "yukleniyor.png"),
         "--paths", str(ARACLAR),
         "--workpath", str(BUILD / "pyinstaller"), "--specpath", str(BUILD),
         "--distpath", str(CIKTI),

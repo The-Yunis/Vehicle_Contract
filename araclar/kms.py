@@ -22,7 +22,6 @@ from pathlib import Path
 
 from guncelleme import Guncelleyici, eskileri_temizle
 from surum import SURUM
-from uret import kiraci_bilgisi, pdf_yap, sozlesme_isle, tl
 
 AD = "Makine Kontrat"
 IMZA = "Coded by Yunus Açıkgöz"
@@ -138,7 +137,8 @@ def form_to_uretici(soz):
     s = {
         "Sözleşme No": soz.get("no", ""),
         "Kiralayan Adı Soyadı / Unvanı": k.get("ad", ""),
-        "TCKN (şahıs) / VKN (şirket)": k.get("kimlik", ""),
+        "TCKN (şahıs) / VKN (şirket)": k.get("kimlik", ""),   # Vergi No
+        "TC Kimlik No": k.get("tckn", "") if k.get("tur") != "sirket" else "",
         "Vergi Dairesi": k.get("vd", ""),
         "Kiralayan Adresi": k.get("adres", ""),
         "Telefon": k.get("tel", ""),
@@ -168,6 +168,8 @@ def uret(v, istek):
     if not (secim.get("docx") or secim.get("pdf")):
         return {"ok": False, "hatalar": ["En az bir çıktı türü seçin (PDF veya Word)."], "uyarilar": []}
     ayar = v["ayarlar"]
+    # Word/XML kütüphaneleri ağır: açılışı yavaşlatmasın diye ilk sözleşme üretiminde yüklenir
+    from uret import kiraci_bilgisi, pdf_yap, sozlesme_isle, tl
     R, uyarilar_genel = kiraci_bilgisi(ayar)
     s, araclar = form_to_uretici(soz)
     klasor = cikti_klasoru(v)
@@ -400,7 +402,20 @@ def pencere_ac(adres):
         "--start-maximized",  # pencere her açılışta tam ekran büyütülmüş gelir
         "--no-first-run", "--no-default-browser-check",
         "--disable-features=Translate,msEdgeSidebarV2", "--disable-sync",
+        # program penceresinde gereksiz Edge servisleri: açılışı hızlandırır
+        "--disable-extensions", "--disable-background-networking", "--disable-component-update",
+        "--disable-default-apps", "--no-pings", "--disable-breakpad",
     ])
+
+
+def yukleniyor_kapat():
+    """Exe açılırken bootloader'ın gösterdiği küçük "Yükleniyor…" kartını kapatır (yalnızca exe'de var).
+    Her yolda çağrılmalı: güncelleme sonrası yeniden başlatmada ve sunucu kipinde Tk ekranı açılmaz."""
+    try:
+        import pyi_splash
+        pyi_splash.close()
+    except Exception:
+        pass
 
 
 class AcilisEkrani:
@@ -440,8 +455,9 @@ class AcilisEkrani:
         tk.Label(imza, text="Yunus Açıkgöz", font=("Segoe UI", 9, "bold"), fg=self.LACI, bg="white").pack(side="left")
         self.konum = -88
         kok.update()
+        yukleniyor_kapat()   # tam ekran açılış geldi: küçük kart kalkabilir
 
-    def bekle(self, olay, en_az=1.2, en_cok=25):
+    def bekle(self, olay, en_az=0.0, en_cok=25):
         bas = time.time()
 
         def tik():
@@ -482,6 +498,7 @@ def main():
             time.sleep(0.5)
     if sunucu is None:
         if not devam and calisan_uygulama_var():  # zaten açık: sadece yeni pencere
+            yukleniyor_kapat()
             pencere_ac(f"http://127.0.0.1:{PORT}/")
             return
         sunucu = ThreadingHTTPServer(("127.0.0.1", 0), Isleyici)
@@ -490,15 +507,20 @@ def main():
     adres = f"http://127.0.0.1:{sunucu.server_address[1]}/"
     threading.Thread(target=sunucu.serve_forever, daemon=True).start()
     threading.Thread(target=arka_planda_denetle, daemon=True).start()
+    if devam or "--sunucu" in sys.argv:
+        yukleniyor_kapat()
     if "--sunucu" in sys.argv:  # geliştirme/test: pencere açmadan çalış
         if sys.stdout:  # konsolsuz exe'de stdout yoktur
             print(adres, flush=True)
         threading.Event().wait()
+    # Sıra önemli: önce açılış ekranı, SONRA Edge. Edge önce başlatılınca açılış ekranı kapandığında
+    # Windows öne kullanıcının önceki penceresini getiriyor ve program arkada kalıyordu (v1.7.1 denemesi).
     acilis = None
     if not devam:
         try:
             acilis = AcilisEkrani()
         except Exception:
+            yukleniyor_kapat()
             gunluge_yaz("Açılış ekranı gösterilemedi:\n" + traceback.format_exc())
     # Açılış ekranı varsa sayfa kendi açılış animasyonunu atlar ve hazır olunca haber verir
     surec = None if devam else pencere_ac(adres + ("?yerel_acilis=1" if acilis else ""))

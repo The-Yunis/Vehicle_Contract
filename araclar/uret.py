@@ -14,7 +14,6 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Pt
-from openpyxl import load_workbook
 
 from ortak import ALAN, metin_degistir, paragraf_sil
 
@@ -350,7 +349,8 @@ def sozlesme_isle(s, arac_kayitlari, R, kdv_orani, uyarilar_genel=(), cikti=None
     if not R["R_UNVAN"] or not R["R_ADRES"]:
         hatalar.append("Ayarlar: Kiracı unvanı ve adresi zorunlu")
     k_ad = metin(sutun(s, "Kiralayan Adı"))
-    kimlik = re.sub(r"\D", "", metin(sutun(s, "TCKN")))
+    kimlik = re.sub(r"\D", "", metin(sutun(s, "TCKN")))          # Vergi No (zorunlu; şahısta 11 hane olabilir)
+    tckn = re.sub(r"\D", "", metin(sutun(s, "TC Kimlik No")))   # isteğe bağlı
     baslangic, bitis = tarih(sutun(s, "Teslim (Başlangıç)")), tarih(sutun(s, "Bitiş"))
     imza = tarih(sutun(s, "İmza Tarihi"))
     teslim_yeri = metin(sutun(s, "Teslim Yeri"))
@@ -358,10 +358,12 @@ def sozlesme_isle(s, arac_kayitlari, R, kdv_orani, uyarilar_genel=(), cikti=None
         hatalar.append("Sözleşme No boş")
     if not k_ad:
         hatalar.append("Kiralayan adı boş")
-    if len(kimlik) == 11 and not tckn_gecerli(kimlik):
-        hatalar.append("TC Kimlik No hatalı (kontrol hanesi tutmuyor)")
-    elif len(kimlik) not in (10, 11):
-        hatalar.append("TCKN 11, VKN 10 haneli olmalı")
+    if len(kimlik) not in (10, 11):
+        hatalar.append("Vergi No 10 (şahıslarda 11) haneli olmalı")
+    elif len(kimlik) == 11 and not tckn_gecerli(kimlik):
+        hatalar.append("Vergi No hatalı (11 haneli numaranın kontrol hanesi tutmuyor)")
+    if tckn and not tckn_gecerli(tckn):
+        hatalar.append("T.C. Kimlik No hatalı (boş bırakılabilir)")
     if not metin(sutun(s, "Kiralayan Adresi")):
         hatalar.append("Kiralayan adresi boş")
     if not baslangic:
@@ -425,10 +427,10 @@ def sozlesme_isle(s, arac_kayitlari, R, kdv_orani, uyarilar_genel=(), cikti=None
     d = dict(R)
     d.update({
         "SOZ_NO": soz_no, "K_AD": k_ad,
-        "K_KIMLIK": f"T.C. Kimlik No: {kimlik}" if len(kimlik) == 11 else f"VKN: {kimlik}",
+        "K_KIMLIK": "",   # eski şablonlar için; kimlik bilgileri artık ayrı satırlarda
         "K_ADRES": metin(sutun(s, "Kiralayan Adresi")), "K_TEL": metin(sutun(s, "Telefon")),
         "K_EPOSTA": metin(sutun(s, "E-posta")), "K_VD": metin(sutun(s, "Vergi Dairesi")),
-        "K_VN": kimlik if len(kimlik) == 10 else "",
+        "K_VN": kimlik, "K_TCKN": tckn,
         "K_YETKILI": metin(sutun(s, "Şirket Yetkilisi")), "K_BANKA": banka, "K_IBAN": iban,
         "BASLANGIC": baslangic.strftime("%d.%m.%Y"), "BITIS": bitis.strftime("%d.%m.%Y"),
         "TESLIM_YERI": teslim_yeri,
@@ -476,6 +478,7 @@ def sozlesme_isle(s, arac_kayitlari, R, kdv_orani, uyarilar_genel=(), cikti=None
 # ---------------------------------------------------------------- ana akış (Excel)
 
 def main():
+    from openpyxl import load_workbook
     if not EXCEL.exists():
         sys.exit(f"Excel bulunamadı: {EXCEL}")
     wb = load_workbook(EXCEL, data_only=True)
