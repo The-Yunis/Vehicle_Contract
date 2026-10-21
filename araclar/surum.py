@@ -1,5 +1,5 @@
 """Sürüm bilgisi tek yerde. Yeni sürüm çıkarırken SADECE burayı ve yenilikler.json'u güncelleyin."""
-SURUM = "1.7.1"
+SURUM = "1.7.2"
 REPO = "The-Yunis/Vehicle_Contract"
 EXE_ADI = "Makine_Kontrat.exe"
 # v1.4.1 ve öncesi güncellemeyi bu adla arar. Geçiş döneminde her Release'e exe bu adla da

@@ -143,16 +143,55 @@ def tablo(doc, satirlar, genislikler, baslik=True, kalin_ilk_sutun=False, boyut=
     return t
 
 
+def sabit_genislik(t, genislikler):
+    """Sütun genişliklerini hem ızgaraya hem hücrelere yazar ve düzeni sabitler
+    (yoksa Word genişlikleri kendi hesaplar, metin dar sütunlarda alt satıra düşer)."""
+    tblPr = t._tbl.tblPr
+    duzen = OxmlElement("w:tblLayout")
+    duzen.set(qn("w:type"), "fixed")
+    tblPr.append(duzen)
+    for gc, g in zip(t._tbl.tblGrid.findall(qn("w:gridCol")), genislikler):
+        gc.set(qn("w:w"), str(int(Cm(g).twips)))
+    for satir in t.rows:
+        for c, g in zip(satir.cells, genislikler):
+            c.width = Cm(g)
+
+
 def arac_tablosu(doc, araclar, toplam):
-    satirlar = [["#", "Plaka", "Cinsi", "Marka / Model", "Yıl", "Şasi No",
-                 "Teknik Özellik / Ataşman", "Aylık Kira (KDV Hariç)"]]
+    """Araç tablosu. Teknik özellik / ataşman, sütunları daraltmasın diye aracın altında tam
+    genişlikte ayrı satıra yazılır (yalnızca doluysa)."""
+    nbsp = lambda s: s.replace(" ", " ")   # plaka ve tutar bölünmesin
+    genislik = [0.6, 2.2, 3.5, 3.1, 1.1, 3.5, 2.5]   # toplam 16,5 cm = metin genişliği
+    satirlar, ek_satirlar = [["#", "Plaka", "Cinsi", "Marka / Model", "Yıl", "Şasi No",
+                              "Aylık Kira (KDV Hariç)"]], []
     for i, a in enumerate(araclar, 1):
-        ozellik = "\n".join(x for x in (a["ozellik"], a["atasman"] and f'Ataşman: {a["atasman"]}') if x)
-        satirlar.append([str(i), a["plaka"] or "-", a["cins"], f'{a["marka"]} {a["model"]}',
-                         a["yil"] or "-", a["sasi"], ozellik or "-", tl(a["bedel"])])
-    satirlar.append(["", "", "", "", "", "", "TOPLAM", tl(toplam)])
-    t = tablo(doc, satirlar, [0.6, 1.7, 1.9, 2.1, 1.0, 3.4, 2.9, 2.4])
-    for c in t.rows[-1].cells[-2:]:
+        satirlar.append([str(i), nbsp(a["plaka"]) or "-", a["cins"], f'{a["marka"]} {a["model"]}',
+                         a["yil"] or "-", a["sasi"], nbsp(tl(a["bedel"]))])
+        ek = "   ·   ".join(x for x in (a["ozellik"] and f'Teknik özellik: {a["ozellik"]}',
+                                        a["atasman"] and f'Ataşman: {a["atasman"]}') if x)
+        if ek:
+            ek_satirlar.append(len(satirlar))
+            satirlar.append([ek] + [""] * (len(genislik) - 1))
+    satirlar.append(["TOPLAM"] + [""] * (len(genislik) - 2) + [nbsp(tl(toplam))])
+    t = tablo(doc, satirlar, genislik)
+    sabit_genislik(t, genislik)
+    for s in ek_satirlar:                       # özellik satırı: # sütunundan sonra tüm genişlik
+        satir = t.rows[s]
+        birlesik = satir.cells[1].merge(satir.cells[-1])
+        for p in birlesik.paragraphs[1:]:
+            p._p.getparent().remove(p._p)
+        metin = satir.cells[0].text
+        satir.cells[0].paragraphs[0].runs[0].text = ""
+        birlesik.paragraphs[0].runs[0].text = metin
+        for r in birlesik.paragraphs[0].runs:
+            r.italic = True
+            r.font.size = Pt(8)
+    son = t.rows[-1]
+    birlesik = son.cells[0].merge(son.cells[-2])   # "TOPLAM" sağa yaslı, tutara bitişik
+    for p in birlesik.paragraphs[1:]:
+        p._p.getparent().remove(p._p)
+    birlesik.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    for c in (birlesik, son.cells[-1]):
         for r in c.paragraphs[0].runs:
             r.bold = True
     return t

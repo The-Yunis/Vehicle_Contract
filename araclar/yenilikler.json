@@ -1,4 +1,7 @@
 {
+  "1.7.2": [
+    "Sözleşmedeki araç tablosu sayfa genişliğine oturtuldu: plaka, cins, marka/model ve şasi no artık alt satıra düşmüyor; teknik özellik ve ataşman, girildiyse aracın altında ayrı satırda yazılıyor."
+  ],
   "1.7.1": [
     "Kiralayanda Vergi No zorunlu ve sözleşmede her zaman yazıyor; T.C. Kimlik No isteğe bağlı (girilirse ayrı satırda yazılır).",
     "Daha hızlı açılış: programa tıkladığınız anda yükleniyor kartı görünür; ağır bileşenler ilk sözleşme oluşturulurken yüklenir."
